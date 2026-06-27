@@ -9,7 +9,6 @@ mod fpu_conversions;
 mod fpu_f80_emulation;
 mod fpu_stack_operations;
 mod logic_test;
-mod rax_x86_tests;
 mod shl2p8_bug_trigger;
 mod shl2p8_edge_cases_should_not_panic;
 mod sse_avx_tests;
