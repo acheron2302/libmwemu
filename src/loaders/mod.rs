@@ -1,3 +1,3 @@
-pub mod elf;
 pub mod macho;
-pub mod pe;
+pub mod pe_loader;
+pub mod elf_loader;

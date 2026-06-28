@@ -1119,6 +1119,7 @@ dependencies = [
  "minidump",
  "nohash-hasher",
  "rand 0.9.4",
+ "rs-header",
  "scan_fmt",
  "serde",
  "serde_arrays",
@@ -1664,6 +1665,13 @@ dependencies = [
  "libc",
  "untrusted",
  "windows-sys 0.52.0",
+]
+
+[[package]]
+name = "rs-header"
+version = "0.1.0"
+dependencies = [
+ "log",
 ]
 
 [[package]]

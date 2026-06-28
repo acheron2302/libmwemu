@@ -11,8 +11,8 @@ use std::collections::BTreeSet;
 
 use crate::emu::disassemble::InstructionCache;
 use crate::emu::{ArchState, Emu};
-use crate::loaders::pe::pe64;
 use crate::maps::mem64::Permission;
+use rs_header::pe::pe64;
 use crate::windows::peb::{peb32, peb64};
 use crate::{
     api::banzai::Banzai, config::Config, debug::breakpoint::Breakpoints, hooks::Hooks, maps::Maps,
@@ -51,6 +51,9 @@ impl Default for Emu {
 
 pub struct Lib {
     pe64: pe64::PE64,
+    /// Raw image bytes, kept because rs-header's PE is borrow-based and the
+    /// later IAT/delay-load binding stage needs them.
+    raw: Vec<u8>,
     base: u64,
     name: String,
 }
@@ -118,6 +121,8 @@ impl Emu {
             last_instruction_size: 0,
             pe64: None,
             pe32: None,
+            pe64_raw: None,
+            pe32_raw: None,
             elf64: None,
             elf32: None,
             macho64: None,
@@ -1202,9 +1207,10 @@ impl Emu {
                 filepath,
                 self.cfg.maps_folder
             );
-            let (base, pe64) = self.map_dll_pe64(&filepath);
+            let (base, pe64, raw) = self.map_dll_pe64(&filepath);
             let lib = Lib {
                 pe64,
+                raw,
                 base,
                 name: dll.to_string(),
             };
@@ -1214,7 +1220,7 @@ impl Emu {
         // Stage 2: get_dependencies
         let mut dependencies: BTreeSet<String> = BTreeSet::new();
         for dll in metadata.iter_mut() {
-            for mut dep in dll.pe64.get_dependencies(self) {
+            for mut dep in dll.pe64.get_dependencies() {
                 dep = dep.to_lowercase();
                 if !dep.ends_with(".dll") {
                     dep.push_str(".dll");
@@ -1236,9 +1242,10 @@ impl Emu {
                 filepath,
                 self.cfg.maps_folder
             );
-            let (base, pe64) = self.map_dll_pe64(&filepath);
+            let (base, pe64, raw) = self.map_dll_pe64(&filepath);
             let lib = Lib {
                 pe64,
+                raw,
                 base,
                 name: dll.to_string(),
             };
@@ -1254,8 +1261,8 @@ impl Emu {
         // Stage 3: IAT binding for base + deps (relocs already applied in `map_dll_pe64`).
         for dll in metadata.iter_mut() {
             log::debug!("iat binding {}", &dll.name);
-            dll.pe64.iat_binding(self, dll.base);
-            dll.pe64.delay_load_binding(self, dll.base);
+            dll.pe64.iat_binding(&dll.raw, self, dll.base);
+            dll.pe64.delay_load_binding(&dll.raw, self, dll.base);
         }
         log::debug!("win32 64bits base libs ok.");
 

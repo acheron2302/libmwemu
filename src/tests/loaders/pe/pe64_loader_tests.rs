@@ -49,8 +49,8 @@ fn pe64_loader_normalizes_api_set_dependencies() {
     emu.cfg.maps_folder = helpers::win64_maps_folder();
     emu.load_code(&helpers::test_data_path("exe64win_mingw.bin"));
 
-    let mut pe = emu.pe64.take().expect("PE64 metadata should be present");
-    let deps = pe.get_dependencies(&mut emu);
+    let pe = emu.pe64.take().expect("PE64 metadata should be present");
+    let deps = pe.get_dependencies();
     emu.pe64 = Some(pe);
     assert!(!deps.is_empty(), "dependencies should not be empty");
     assert!(

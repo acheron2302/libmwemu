@@ -24,7 +24,7 @@ pub fn FindResourceA(emu: &mut emu::Emu) {
             .pe32
             .as_ref()
             .unwrap()
-            .get_resource(None, None, Some(&name), Some(&ntype));
+            .get_resource(emu.pe32_raw.as_deref().unwrap(), None, None, Some(name.as_str()), Some(ntype.as_str()));
     } else if lpName > 0xff && lpType <= 0xff {
         let name = emu.maps.read_string(lpName as u64);
         log_red!(
@@ -40,7 +40,7 @@ pub fn FindResourceA(emu: &mut emu::Emu) {
             .pe32
             .as_ref()
             .unwrap()
-            .get_resource(Some(lpType as u32), None, Some(&name), None);
+            .get_resource(emu.pe32_raw.as_deref().unwrap(), Some(lpType as u32), None, Some(name.as_str()), None);
     } else if lpName <= 0xff && lpType > 0xff {
         let ntype = emu.maps.read_string(lpType as u64);
         log_red!(
@@ -56,7 +56,7 @@ pub fn FindResourceA(emu: &mut emu::Emu) {
             .pe32
             .as_ref()
             .unwrap()
-            .get_resource(None, Some(lpName as u32), None, Some(&ntype));
+            .get_resource(emu.pe32_raw.as_deref().unwrap(), None, Some(lpName as u32), None, Some(ntype.as_str()));
     } else if lpName <= 0xff && lpType <= 0xff {
         log_red!(
             emu,
@@ -67,7 +67,7 @@ pub fn FindResourceA(emu: &mut emu::Emu) {
             lpType
         );
 
-        x = emu.pe32.as_ref().unwrap().get_resource(
+        x = emu.pe32.as_ref().unwrap().get_resource(emu.pe32_raw.as_deref().unwrap(), 
             Some(lpType as u32),
             Some(lpName as u32),
             None,
