@@ -113,7 +113,7 @@ impl Emu {
             self.load_elf64(filename);
 
         // PE: use COFF Machine field to distinguish x86 / x86_64 / ARM64
-        } else if !self.cfg.shellcode && pe_machine_type(filename) == Some(IMAGE_FILE_MACHINE_I386)
+        } else if !self.cfg.shellcode && pe_machine_type(&raw) == Some(IMAGE_FILE_MACHINE_I386)
         {
             log::trace!(
                 "PE32 x86 header detected (Machine=0x{:04x}).",
@@ -149,7 +149,7 @@ impl Emu {
             self.regs_mut().rip = ep;
 
         // PE64 ARM64
-        } else if !self.cfg.shellcode && pe_machine_type(filename) == Some(IMAGE_FILE_MACHINE_ARM64)
+        } else if !self.cfg.shellcode && pe_machine_type(&raw) == Some(IMAGE_FILE_MACHINE_ARM64)
         {
             log::trace!(
                 "PE64 ARM64 header detected (Machine=0x{:04x}). Windows AArch64 PE recognized.",
@@ -191,7 +191,7 @@ impl Emu {
             self.set_pc(ep);
 
         // PE64 x86_64
-        } else if !self.cfg.shellcode && pe_machine_type(filename) == Some(IMAGE_FILE_MACHINE_AMD64)
+        } else if !self.cfg.shellcode && pe_machine_type(&raw) == Some(IMAGE_FILE_MACHINE_AMD64)
         {
             log::trace!(
                 "PE64 x86_64 header detected (Machine=0x{:04x}).",
