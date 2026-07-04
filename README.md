@@ -1,5 +1,8 @@
 
 # LIBMWEMU x86 emulation + win32 simulation 
+[![Rust CI](https://github.com/mwemuorg/libmwemu/actions/workflows/ci.yaml/badge.svg)](https://github.com/mwemuorg/libmwemu/actions/workflows/ci.yaml)
+[![libmwemu crates.io](https://img.shields.io/crates/v/libmwemu.svg)](https://crates.io/crates/libmwemu)
+[![Docs.rs](https://docs.rs/libmwemu/badge.svg)](https://docs.rs/libmwemu)
 
 ## Documentation
 
@@ -17,12 +20,12 @@ https://crates.io/crates/libmwemu
 
 ## Github
 
-https://github.com/sha0coder/mwemu
+https://github.com/mwemuorg/mwemu
 
 ## Usage
 
 Download the maps from:
-https://github.com/sha0coder/mwemu
+https://github.com/mwemuorg/mwemu
 
 Create an emu32 or emu64 and it's important to set the maps folder.
 

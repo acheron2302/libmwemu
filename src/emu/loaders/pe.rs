@@ -1,9 +1,9 @@
 use crate::emu::Emu;
-use crate::loaders::pe::pe32::PE32;
-use crate::loaders::pe::pe64::PE64;
 use crate::maps::mem64::Permission;
 use crate::windows::constants;
 use crate::windows::peb::{peb32, peb64};
+use rs_header::pe::pe32::PE32;
+use rs_header::pe::pe64::PE64;
 
 macro_rules! align_up {
     ($size:expr, $align:expr) => {{
@@ -13,20 +13,29 @@ macro_rules! align_up {
 }
 
 impl Emu {
+    /// Read a PE image off disk. This is plain I/O — all interpretation of the
+    /// bytes is done by `rs-header`; libmwemu never parses the raw itself.
+    fn read_pe_raw(filename: &str) -> Vec<u8> {
+        std::fs::read(filename)
+            .unwrap_or_else(|e| panic!("cannot read PE file {}: {}", filename, e))
+    }
+
     /// Prefer PE `ImageBase` when it is in canonical user space and does not overlap existing maps;
     /// otherwise fall back to `lib64_alloc` in `LIBS64_*`.
-    fn pick_pe64_dll_base(&mut self, pe64: &PE64) -> u64 {
+    /// `raw_len` is the on-disk image size (rs-header's borrow-based PE no longer
+    /// owns the bytes, so the caller supplies it).
+    fn pick_pe64_dll_base(&mut self, pe64: &PE64, raw_len: u64) -> u64 {
         const USER_MAX: u64 = 0x7FFF_FFFF_FFFF;
         let ib = pe64.opt.image_base;
-        let span = (pe64.opt.size_of_image as u64).max(pe64.size());
+        let span = (pe64.opt.size_of_image as u64).max(raw_len);
         if ib < 0x10000 {
-            return self.maps.lib64_alloc(pe64.size()).expect("out of memory");
+            return self.maps.lib64_alloc(raw_len).expect("out of memory");
         }
         let Some(end) = ib.checked_add(span) else {
-            return self.maps.lib64_alloc(pe64.size()).expect("out of memory");
+            return self.maps.lib64_alloc(raw_len).expect("out of memory");
         };
         if end > USER_MAX || self.maps.overlaps(ib, span) {
-            return self.maps.lib64_alloc(pe64.size()).expect("out of memory");
+            return self.maps.lib64_alloc(raw_len).expect("out of memory");
         }
         ib
     }
@@ -34,27 +43,23 @@ impl Emu {
     /// Complex funtion called from many places and with multiple purposes.
     /// This is called from load_code() if sample is PE32, but also from load_library etc.
     /// cyclic stuff: [load_pe] -> [iat-binding]  ->  [load_library] -> [load_pe]
-    /// Powered by pe32.rs implementation.
+    /// Powered by rs-header's pe32 implementation.
     pub fn load_pe32(&mut self, filename: &str, set_entry: bool, force_base: u32) -> (u32, u32) {
         let is_maps = filename.contains("windows/x86/");
         let map_name = self.filename_to_mapname(filename);
         let filename2 = map_name;
-        let mut pe32 = PE32::load(filename);
+        let raw = Self::read_pe_raw(filename);
+        let mut pe32 = PE32::parse(filename, &raw);
+        let raw_len = raw.len() as u64;
         let base: u32;
 
         log::trace!("loading pe32 {}", filename);
-
-        /* .rsrc extraction tests
-        if set_entry {
-            log::trace!("get_resource_by_id");
-            pe32.get_resource(Some(3), Some(0), None, None);
-        }*/
 
         // 1. base logic
 
         // base is forced by libmwemu
         if force_base > 0 {
-            if self.maps.overlaps(force_base as u64, pe32.size() as u64) {
+            if self.maps.overlaps(force_base as u64, raw_len) {
                 panic!("the forced base address overlaps");
             } else {
                 base = force_base;
@@ -66,7 +71,7 @@ impl Emu {
             && !self.cfg.emulate_winapi
         {
             base = self.cfg.code_base_addr as u32;
-            if self.maps.overlaps(base as u64, pe32.size() as u64) {
+            if self.maps.overlaps(base as u64, raw_len) {
                 panic!("the setted base address overlaps");
             }
 
@@ -97,10 +102,10 @@ impl Emu {
         }
 
         if set_entry || self.cfg.emulate_winapi {
-            // 2. pe binding
+            // 2. own this image (binding now happens after the sections are
+            // mapped — rs-header's binding patches the *mapped* IAT in guest
+            // memory, not the raw buffer, so the slots must exist first).
             if !is_maps || self.cfg.emulate_winapi {
-                pe32.iat_binding(self, base);
-                pe32.delay_load_binding(self, base);
                 self.base = base as u64;
             }
 
@@ -131,10 +136,10 @@ impl Emu {
                 Permission::READ_WRITE,
             )
             .expect("cannot create pe map");
-        pemap.memcpy(pe32.get_headers(), pe32.opt.size_of_headers as usize);
+        pemap.memcpy(pe32.headers(&raw), pe32.opt.size_of_headers as usize);
 
         for i in 0..pe32.num_of_sections() {
-            let ptr = pe32.get_section_ptr(i);
+            let ptr = pe32.get_section_ptr(&raw, i);
             let sect = pe32.get_section(i);
             let charactis = sect.characteristics;
             let is_exec = charactis & 0x20000000 != 0x0;
@@ -202,6 +207,12 @@ impl Emu {
             }
         }
 
+        // 4b. pe binding — sections (incl. the IAT) are mapped now.
+        if (set_entry || self.cfg.emulate_winapi) && (!is_maps || self.cfg.emulate_winapi) {
+            pe32.iat_binding(&raw, self, base);
+            pe32.delay_load_binding(&raw, self, base);
+        }
+
         // 5. ldr table entry creation and link
         if set_entry {
             let _space_addr = peb32::create_ldr_entry(
@@ -219,14 +230,17 @@ impl Emu {
         // 6. return values
         let pe_hdr_off = pe32.dos.e_lfanew;
         self.pe32 = Some(pe32);
+        self.pe32_raw = Some(raw);
         (base, pe_hdr_off)
     }
 
-    pub fn map_dll_pe64(&mut self, filename: &str) -> (u64, PE64) {
+    pub fn map_dll_pe64(&mut self, filename: &str) -> (u64, PE64, Vec<u8>) {
         let map_name = self.filename_to_mapname(filename);
-        let mut pe64 = PE64::load(&filename.to_lowercase());
+        let raw = Self::read_pe_raw(&filename.to_lowercase());
+        let pe64 = PE64::parse(&filename.to_lowercase(), &raw);
+        let raw_len = raw.len() as u64;
 
-        let base = self.pick_pe64_dll_base(&pe64);
+        let base = self.pick_pe64_dll_base(&pe64, raw_len);
 
         let sec_allign = pe64.opt.section_alignment;
 
@@ -241,9 +255,9 @@ impl Emu {
                 panic!("cannot create pe64 map: {}", e);
             }
         };
-        pemap.memcpy(pe64.get_headers(), pe64.opt.size_of_headers as usize);
+        pemap.memcpy(pe64.headers(&raw), pe64.opt.size_of_headers as usize);
         for i in 0..pe64.num_of_sections() {
-            let ptr = pe64.get_section_ptr(i);
+            let ptr = pe64.get_section_ptr(&raw, i);
             let sect = pe64.get_section(i);
             let charistic = sect.characteristics;
             let is_exec = charistic & 0x20000000 != 0x0;
@@ -304,27 +318,29 @@ impl Emu {
             }
         }
 
-        pe64.apply_relocations(self, base);
+        pe64.apply_relocations(&raw, self, base);
 
-        (base, pe64)
+        (base, pe64, raw)
     }
 
     /// Complex funtion called from many places and with multiple purposes.
     /// This is called from load_code() if sample is PE64, but also from load_library etc.
     /// cyclic stuff: [load_pe] -> [iat-binding]  ->  [load_library] -> [load_pe]
-    /// Powered by pe64.rs implementation.
+    /// Powered by rs-header's pe64 implementation.
     pub fn load_pe64(&mut self, filename: &str, set_entry: bool, force_base: u64) -> (u64, u32) {
         let is_maps = filename.contains("windows/x86_64/") || filename.contains("windows/aarch64/");
         let map_name = self.filename_to_mapname(filename);
         let filename2 = map_name;
-        let mut pe64 = PE64::load(filename);
+        let raw = Self::read_pe_raw(filename);
+        let mut pe64 = PE64::parse(filename, &raw);
+        let raw_len = raw.len() as u64;
         let base: u64;
 
         // 1. base logic
 
         // base is setted by libmwemu
         if force_base > 0 {
-            if self.maps.overlaps(force_base, pe64.size()) {
+            if self.maps.overlaps(force_base, raw_len) {
                 panic!("the forced base address overlaps");
             } else {
                 base = force_base;
@@ -333,7 +349,7 @@ impl Emu {
         // base is setted by user
         } else if !is_maps && self.cfg.code_base_addr != constants::CFG_DEFAULT_BASE {
             base = self.cfg.code_base_addr;
-            if self.maps.overlaps(base, pe64.size()) {
+            if self.maps.overlaps(base, raw_len) {
                 panic!("the setted base address overlaps");
             }
 
@@ -342,16 +358,16 @@ impl Emu {
             // user's program
             if set_entry {
                 if pe64.opt.image_base >= constants::LIBS64_MIN {
-                    base = self.maps.alloc(pe64.size() + 0xff).expect("out of memory");
-                } else if self.maps.overlaps(pe64.opt.image_base, pe64.size()) {
-                    base = self.maps.alloc(pe64.size() + 0xff).expect("out of memory");
+                    base = self.maps.alloc(raw_len + 0xff).expect("out of memory");
+                } else if self.maps.overlaps(pe64.opt.image_base, raw_len) {
+                    base = self.maps.alloc(raw_len + 0xff).expect("out of memory");
                 } else {
                     base = pe64.opt.image_base;
                 }
 
             // system library
             } else {
-                base = self.pick_pe64_dll_base(&pe64);
+                base = self.pick_pe64_dll_base(&pe64, raw_len);
             }
         }
 
@@ -391,10 +407,10 @@ impl Emu {
                 panic!("cannot create pe64 map: {}", e);
             }
         };
-        pemap.memcpy(pe64.get_headers(), pe64.opt.size_of_headers as usize);
+        pemap.memcpy(pe64.headers(&raw), pe64.opt.size_of_headers as usize);
 
         for i in 0..pe64.num_of_sections() {
-            let ptr = pe64.get_section_ptr(i);
+            let ptr = pe64.get_section_ptr(&raw, i);
             let sect = pe64.get_section(i);
 
             let charistic = sect.characteristics;
@@ -463,7 +479,7 @@ impl Emu {
         }
 
         // 4b. Base relocs on the mapped image (all load paths, including DLL without emulate_winapi).
-        pe64.apply_relocations(self, base);
+        pe64.apply_relocations(&raw, self, base);
 
         // Decide whether to eagerly bind this image's IAT.
         let bind_iat = if self.cfg.emulate_winapi {
@@ -482,8 +498,8 @@ impl Emu {
             true
         };
         if bind_iat {
-            pe64.iat_binding(self, base);
-            pe64.delay_load_binding(self, base);
+            pe64.iat_binding(&raw, self, base);
+            pe64.delay_load_binding(&raw, self, base);
         }
 
         // 5. ldr table entry creation and link
@@ -502,6 +518,7 @@ impl Emu {
         // 6. return values
         let pe_hdr_off = pe64.dos.e_lfanew;
         self.pe64 = Some(pe64);
+        self.pe64_raw = Some(raw);
         (base, pe_hdr_off)
     }
 }

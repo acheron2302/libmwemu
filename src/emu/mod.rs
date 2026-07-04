@@ -17,15 +17,15 @@ use crate::{
     debug::breakpoint::Breakpoints,
     debug::definitions::{Definition, StoredContext},
     hooks::Hooks,
-    loaders::elf::{elf32::Elf32, elf64::Elf64},
     loaders::macho::macho64::Macho64,
-    loaders::pe::{pe32::PE32, pe64::PE64},
     maps::Maps,
     threading::context::ThreadContext,
     threading::global_locks::GlobalLocks,
     utils::colors::Colors,
     windows::structures::MemoryOperation,
 };
+use rs_header::elf::{elf32::Elf32, elf64::Elf64};
+use rs_header::pe::{pe32::PE32, pe64::PE64};
 
 /// Architecture-specific instruction decoding and disassembly state.
 /// Discriminated by target architecture so each variant carries only
@@ -120,6 +120,11 @@ pub struct Emu {
     pub os: OperatingSystem,      // target OS (set by loader / init)
     pub pe64: Option<PE64>,       // parsed PE64 for runtime import resolution & resources
     pub pe32: Option<PE32>,       // parsed PE32 for runtime import resolution & resources
+    // rs-header's PE parser is borrow-based (it does not keep the file bytes),
+    // so libmwemu owns the raw image and passes it to rs-header methods that
+    // need it (resource lookups, serialization re-parse). Never parsed here.
+    pub pe64_raw: Option<Vec<u8>>,
+    pub pe32_raw: Option<Vec<u8>>,
     pub elf64: Option<Elf64>,     // parsed ELF64 (Linux x86_64 / AArch64)
     pub elf32: Option<Elf32>,     // parsed ELF32 (Linux x86)
     pub macho64: Option<Macho64>, // parsed Mach-O 64 (macOS AArch64), includes addr_to_symbol

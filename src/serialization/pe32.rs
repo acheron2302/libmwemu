@@ -1,33 +1,18 @@
 use serde::{Deserialize, Serialize};
 
-use crate::loaders::pe::pe32::PE32;
+use rs_header::pe::pe32::PE32;
 
+/// On-disk form of a loaded PE32. rs-header's parser is borrow-based and does
+/// not keep the file bytes, so the raw image is stored here (owned at runtime by
+/// `Emu::pe32_raw`) and re-parsed on restore.
 #[derive(Serialize, Deserialize)]
 pub struct SerializablePE32 {
     pub filename: String,
     pub raw: Vec<u8>,
 }
 
-impl From<PE32> for SerializablePE32 {
-    fn from(pe32: PE32) -> Self {
-        SerializablePE32 {
-            filename: pe32.filename,
-            raw: pe32.raw,
-        }
-    }
-}
-
-impl From<&PE32> for SerializablePE32 {
-    fn from(pe32: &PE32) -> Self {
-        SerializablePE32 {
-            filename: pe32.filename.clone(),
-            raw: pe32.raw.clone(),
-        }
-    }
-}
-
 impl From<SerializablePE32> for PE32 {
     fn from(serialized: SerializablePE32) -> Self {
-        PE32::load_from_raw(&serialized.filename, &serialized.raw)
+        PE32::parse(&serialized.filename, &serialized.raw)
     }
 }

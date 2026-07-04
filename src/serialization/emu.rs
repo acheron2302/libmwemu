@@ -231,8 +231,16 @@ impl<'a> From<&'a Emu> for SerializableEmu {
             run_until_ret: emu.run_until_ret,
             // Platform & loaded binary
             os: emu.os,
-            pe64: emu.pe64.as_ref().map(|x| x.into()),
-            pe32: emu.pe32.as_ref().map(|x| x.into()),
+            // rs-header's PE is borrow-based, so the raw bytes live in
+            // `emu.pe{32,64}_raw`; pair them with the parsed filename.
+            pe64: emu.pe64.as_ref().map(|pe| SerializablePE64 {
+                filename: pe.filename.clone(),
+                raw: emu.pe64_raw.clone().unwrap_or_default(),
+            }),
+            pe32: emu.pe32.as_ref().map(|pe| SerializablePE32 {
+                filename: pe.filename.clone(),
+                raw: emu.pe32_raw.clone().unwrap_or_default(),
+            }),
             tls_callbacks: emu.tls_callbacks.clone(),
             // Thread management
             threads: emu.threads.iter().map(|t| t.into()).collect(),
@@ -327,6 +335,11 @@ impl From<SerializableEmu> for Emu {
             },
         };
 
+        // rs-header's PE is borrow-based; keep the raw bytes alongside the
+        // re-parsed PE so runtime resource lookups still work after restore.
+        let pe64_raw = pe64.as_ref().map(|x| x.raw.clone());
+        let pe32_raw = pe32.as_ref().map(|x| x.raw.clone());
+
         let mut emu = Emu {
             // Configuration & display
             cfg: cfg.clone(),
@@ -362,9 +375,11 @@ impl From<SerializableEmu> for Emu {
             os,
             pe64: pe64.map(|x| x.into()),
             pe32: pe32.map(|x| x.into()),
-            elf64: None,   // TODO: not yet serialized
-            elf32: None,   // TODO: not yet serialized
-            macho64: None, // TODO: not yet serialized
+            pe64_raw,
+            pe32_raw,
+            elf64: None,    // TODO: not yet serialized
+            elf32: None,    // TODO: not yet serialized
+            macho64: None,  // TODO: not yet serialized
             tls_callbacks,
             library_loaded: false,
             // Thread management

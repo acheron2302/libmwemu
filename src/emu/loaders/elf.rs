@@ -2,14 +2,23 @@ use std::collections::HashMap;
 use std::path::Path;
 
 use crate::emu::Emu;
-use crate::loaders::elf::elf64::Elf64;
 use crate::windows::constants;
+use rs_header::elf::ElfError;
+use rs_header::elf::elf64::Elf64;
+
+/// Read an ELF64 off disk and parse it through rs-header. Plain I/O here; all
+/// byte interpretation lives in rs-header.
+fn parse_elf64_file(path: &str) -> Result<Elf64, ElfError> {
+    let raw = std::fs::read(path)
+        .map_err(|e| ElfError::new(&format!("cannot read {}: {}", path, e)))?;
+    Elf64::parse(&raw)
+}
 
 impl Emu {
     /// Loads an ELF64 parsing sections etc, powered by elf64.rs
     /// This is called from load_code() if the sample is ELF64
     pub fn load_elf64(&mut self, filename: &str) {
-        let mut elf64 = Elf64::parse(filename).unwrap();
+        let mut elf64 = parse_elf64_file(filename).unwrap();
         let dyn_link = !elf64.get_dynamic().is_empty();
 
         if dyn_link {
@@ -160,7 +169,7 @@ impl Emu {
                 continue;
             };
 
-            let mut elflib = match Elf64::parse(&local_path) {
+            let mut elflib = match parse_elf64_file(&local_path) {
                 Ok(lib) => lib,
                 Err(err) => {
                     log::warn!("elf64: failed to parse {}: {}", local_path, err);
@@ -315,7 +324,7 @@ impl Emu {
             return;
         };
 
-        let mut ld = match Elf64::parse(&host) {
+        let mut ld = match parse_elf64_file(&host) {
             Ok(l) => l,
             Err(err) => {
                 log::error!("ld.so bootstrap: failed to parse {}: {}", host, err);

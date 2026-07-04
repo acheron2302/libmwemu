@@ -2,10 +2,10 @@ use iced_x86::Register;
 
 use crate::arch::Arch;
 use crate::emu::Emu;
-use crate::loaders::elf::elf32::Elf32;
-use crate::loaders::elf::elf64::Elf64;
 use crate::loaders::macho::macho64::Macho64;
-use crate::loaders::pe::{
+use rs_header::elf::elf32::Elf32;
+use rs_header::elf::elf64::Elf64;
+use rs_header::pe::{
     IMAGE_FILE_MACHINE_AMD64, IMAGE_FILE_MACHINE_ARM64, IMAGE_FILE_MACHINE_I386, pe_machine_type,
 };
 use crate::maps::mem64::Permission;
@@ -28,13 +28,17 @@ impl Emu {
         self.filename = filename.to_string();
         self.cfg.filename = self.filename.clone();
 
+        // Read the file once for the rs-header byte-based format detectors.
+        // (Mach-O / PE detection below still take a path; this is just I/O.)
+        let raw = std::fs::read(filename).unwrap_or_default();
+
         // ELF32
-        if Elf32::is_elf32(filename) && !self.cfg.shellcode {
+        if Elf32::is_elf32(&raw) && !self.cfg.shellcode {
             self.os = crate::arch::OperatingSystem::Linux;
             self.cfg.arch = Arch::X86;
 
             log::trace!("elf32 detected.");
-            let mut elf32 = Elf32::parse(filename).unwrap();
+            let mut elf32 = Elf32::parse(&raw).unwrap();
             elf32.load(&mut self.maps);
             self.regs_mut().rip = (elf32.elf_hdr.e_entry as u64) + elf32.base();
             let stack_sz = 0x30000;
@@ -43,7 +47,7 @@ impl Emu {
             self.elf32 = Some(elf32);
 
         // ELF64 AArch64
-        } else if Elf64::is_elf64_aarch64(filename) && !self.cfg.shellcode {
+        } else if Elf64::is_elf64_aarch64(&raw) && !self.cfg.shellcode {
             self.os = crate::arch::OperatingSystem::Linux;
             self.cfg.arch = Arch::Aarch64;
             self.maps.is_64bits = true;
@@ -100,7 +104,7 @@ impl Emu {
             self.load_macho64(filename);
 
         // ELF64 x86_64
-        } else if Elf64::is_elf64_x64(filename) && !self.cfg.shellcode {
+        } else if Elf64::is_elf64_x64(&raw) && !self.cfg.shellcode {
             self.os = crate::arch::OperatingSystem::Linux;
             self.cfg.arch = Arch::X86_64;
             self.maps.clear();
@@ -109,7 +113,7 @@ impl Emu {
             self.load_elf64(filename);
 
         // PE: use COFF Machine field to distinguish x86 / x86_64 / ARM64
-        } else if !self.cfg.shellcode && pe_machine_type(filename) == Some(IMAGE_FILE_MACHINE_I386)
+        } else if !self.cfg.shellcode && pe_machine_type(&raw) == Some(IMAGE_FILE_MACHINE_I386)
         {
             log::trace!(
                 "PE32 x86 header detected (Machine=0x{:04x}).",
@@ -145,7 +149,7 @@ impl Emu {
             self.regs_mut().rip = ep;
 
         // PE64 ARM64
-        } else if !self.cfg.shellcode && pe_machine_type(filename) == Some(IMAGE_FILE_MACHINE_ARM64)
+        } else if !self.cfg.shellcode && pe_machine_type(&raw) == Some(IMAGE_FILE_MACHINE_ARM64)
         {
             log::trace!(
                 "PE64 ARM64 header detected (Machine=0x{:04x}). Windows AArch64 PE recognized.",
@@ -187,7 +191,7 @@ impl Emu {
             self.set_pc(ep);
 
         // PE64 x86_64
-        } else if !self.cfg.shellcode && pe_machine_type(filename) == Some(IMAGE_FILE_MACHINE_AMD64)
+        } else if !self.cfg.shellcode && pe_machine_type(&raw) == Some(IMAGE_FILE_MACHINE_AMD64)
         {
             log::trace!(
                 "PE64 x86_64 header detected (Machine=0x{:04x}).",
