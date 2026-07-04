@@ -83,7 +83,11 @@ impl Emu {
             return false;
         }
 
-        let mask: u64 = if esz == 8 { u64::MAX } else { (1u64 << (esz * 8)) - 1 };
+        let mask: u64 = if esz == 8 {
+            u64::MAX
+        } else {
+            (1u64 << (esz * 8)) - 1
+        };
         let le = |b: &[u8]| -> u64 {
             let mut v = 0u64;
             for (i, &x) in b.iter().enumerate() {

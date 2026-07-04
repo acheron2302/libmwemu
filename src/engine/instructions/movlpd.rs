@@ -4,7 +4,10 @@ use iced_x86::Instruction;
 
 pub fn execute(emu: &mut Emu, ins: &Instruction, instruction_sz: usize, _rep_step: bool) -> bool {
     // movlpd moves the LOW quadword; the high quadword of the destination is kept.
-    emu.show_instruction(color!("Cyan"), &crate::emu::decoded_instruction::DecodedInstruction::X86(*ins));
+    emu.show_instruction(
+        color!("Cyan"),
+        &crate::emu::decoded_instruction::DecodedInstruction::X86(*ins),
+    );
 
     let sz0 = emu.get_operand_sz(ins, 0);
 

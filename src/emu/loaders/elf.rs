@@ -169,7 +169,13 @@ impl Emu {
             };
 
             let map_name = lib.rsplit('/').next().unwrap_or(lib);
-            elflib.load(&mut self.maps, map_name, true, true, constants::CFG_DEFAULT_BASE);
+            elflib.load(
+                &mut self.maps,
+                map_name,
+                true,
+                true,
+                constants::CFG_DEFAULT_BASE,
+            );
 
             for (sym, addr) in elflib.exported_symbols() {
                 export_map.entry(sym.clone()).or_insert(addr);
@@ -197,10 +203,17 @@ impl Emu {
         let mut irelative: Vec<(u64, u64)> = Vec::new();
         if real_libc {
             for (name, lib) in &loaded_libs {
-                let outcome =
-                    lib.apply_dynamic_relocations_full(&mut self.maps, &export_map, &ifunc_resolvers);
+                let outcome = lib.apply_dynamic_relocations_full(
+                    &mut self.maps,
+                    &export_map,
+                    &ifunc_resolvers,
+                );
                 if !outcome.unresolved.is_empty() {
-                    log::trace!("elf64: {} unresolved imports: {:?}", name, outcome.unresolved);
+                    log::trace!(
+                        "elf64: {} unresolved imports: {:?}",
+                        name,
+                        outcome.unresolved
+                    );
                 }
                 irelative.extend(outcome.irelative);
             }
@@ -210,7 +223,10 @@ impl Emu {
         let outcome =
             elf64.apply_dynamic_relocations_full(&mut self.maps, &export_map, &ifunc_resolvers);
         if !outcome.unresolved.is_empty() {
-            log::warn!("elf64: unresolved dynamic imports: {:?}", outcome.unresolved);
+            log::warn!(
+                "elf64: unresolved dynamic imports: {:?}",
+                outcome.unresolved
+            );
         }
         irelative.extend(outcome.irelative);
 
@@ -292,7 +308,10 @@ impl Emu {
     /// every relocation, resolves ifuncs and sets up TLS by itself.
     fn setup_ld_so_bootstrap(&mut self, elf64: &mut Elf64, interp_path: &str) {
         let Some(host) = self.resolve_host_lib(interp_path) else {
-            log::error!("ld.so bootstrap: interpreter {} not found on host", interp_path);
+            log::error!(
+                "ld.so bootstrap: interpreter {} not found on host",
+                interp_path
+            );
             return;
         };
 
@@ -304,9 +323,16 @@ impl Emu {
             }
         };
         ld.segment_mode = true;
-        ld.load(&mut self.maps, "ld-linux", true, true, constants::CFG_DEFAULT_BASE);
+        ld.load(
+            &mut self.maps,
+            "ld-linux",
+            true,
+            true,
+            constants::CFG_DEFAULT_BASE,
+        );
 
-        let ld_base = ld.base;        let ld_entry = ld.rebase_vaddr(ld.elf_hdr.e_entry);
+        let ld_base = ld.base;
+        let ld_entry = ld.rebase_vaddr(ld.elf_hdr.e_entry);
 
         // Keep ld.so's symbol names for nicer disassembly/tracing.
         for (sym, addr) in ld.exported_symbols() {
@@ -325,7 +351,9 @@ impl Emu {
         self.set_pc(ld_entry);
         log::info!(
             "ld.so bootstrap: ld_base=0x{:x} ld_entry=0x{:x} prog_entry=0x{:x}",
-            ld_base, ld_entry, prog_entry
+            ld_base,
+            ld_entry,
+            prog_entry
         );
     }
 

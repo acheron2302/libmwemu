@@ -426,10 +426,7 @@ impl Emu {
     pub fn heap_mut(&mut self) -> &mut O1Heap {
         if self.heap_management.is_none() {
             let heap_sz: u64 = 4 * 1024 * 1024; // 4 MiB
-            let base = self
-                .maps
-                .alloc(heap_sz)
-                .expect("cannot reserve heap arena");
+            let base = self.maps.alloc(heap_sz).expect("cannot reserve heap arena");
             self.maps
                 .create_map(".heap", base, heap_sz, Permission::READ_WRITE)
                 .expect("cannot create heap map");
@@ -1050,9 +1047,8 @@ impl Emu {
                     let ntdll_base = ntdll_pe.get_base();
                     let ntdll_size: usize = 0x800000;
                     // Pattern: `mov r12d, 0x2000 ; test edi, edi ; js rel32`
-                    let needle: &[u8] = &[
-                        0x41, 0xbc, 0x00, 0x20, 0x00, 0x00, 0x85, 0xff, 0x0f, 0x88,
-                    ];
+                    let needle: &[u8] =
+                        &[0x41, 0xbc, 0x00, 0x20, 0x00, 0x00, 0x85, 0xff, 0x0f, 0x88];
                     let mut found_va: Option<u64> = None;
                     for off in 0..ntdll_size.saturating_sub(needle.len() + 4) {
                         let va = ntdll_base + off as u64;

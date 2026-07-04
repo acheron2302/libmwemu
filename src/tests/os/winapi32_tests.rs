@@ -58,10 +58,16 @@ fn test_heap_alloc_32() {
 
     // HeapAlloc(hHeap, dwFlags, dwBytes) via the stdcall calling convention.
     // Small allocation → managed heap path (< 0x8000).
-    let p1 =
-        helpers::call_winapi32(&mut emu, winapi32::kernel32::HeapAlloc, &[0x1234, 0x8, 0x100]) as u64;
+    let p1 = helpers::call_winapi32(
+        &mut emu,
+        winapi32::kernel32::HeapAlloc,
+        &[0x1234, 0x8, 0x100],
+    ) as u64;
     assert!(p1 != 0, "HeapAlloc(0x100) returned NULL");
-    assert!(emu.maps.is_mapped(p1), "HeapAlloc(0x100) pointer not mapped");
+    assert!(
+        emu.maps.is_mapped(p1),
+        "HeapAlloc(0x100) pointer not mapped"
+    );
     emu.maps.write_dword(p1, 0xcafebabe);
     assert_eq!(emu.maps.read_dword(p1).unwrap(), 0xcafebabe);
 
@@ -72,8 +78,11 @@ fn test_heap_alloc_32() {
     assert!(p2 != p1, "two allocations returned the same pointer");
 
     // Large allocation → dedicated map path (>= 0x8000).
-    let big =
-        helpers::call_winapi32(&mut emu, winapi32::kernel32::HeapAlloc, &[0x1234, 0, 0x20000]) as u64;
+    let big = helpers::call_winapi32(
+        &mut emu,
+        winapi32::kernel32::HeapAlloc,
+        &[0x1234, 0, 0x20000],
+    ) as u64;
     assert!(big != 0, "large HeapAlloc returned NULL");
     assert!(emu.maps.is_mapped(big), "large HeapAlloc not mapped");
 }

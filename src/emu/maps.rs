@@ -20,7 +20,10 @@ impl Emu {
         // (`ensure_maps_dll`), so just make sure the directory exists.
         let is_32bit = folder.contains("windows/x86") && !folder.contains("x86_64");
         if is_32bit {
-            log::trace!("Maps folder '{}' incomplete, attempting legacy download...", folder);
+            log::trace!(
+                "Maps folder '{}' incomplete, attempting legacy download...",
+                folder
+            );
             if let Err(e) = self.download_and_extract_maps(folder) {
                 log::error!("Failed to download 32-bit maps '{}': {}", folder, e);
                 panic!("Cannot obtain 32-bit Windows maps. Supply your own with `--maps <dir>`.");

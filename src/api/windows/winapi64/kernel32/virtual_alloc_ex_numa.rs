@@ -36,7 +36,12 @@ pub fn VirtualAllocExNuma(emu: &mut emu::Emu) {
     }
 
     if !mem_reserve && !mem_commit {
-        fail(emu, "VirtualAllocExNuma", &ctx, "unsupported allocation type");
+        fail(
+            emu,
+            "VirtualAllocExNuma",
+            &ctx,
+            "unsupported allocation type",
+        );
         return;
     }
 

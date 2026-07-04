@@ -44,8 +44,8 @@ const WINVER_ALIASES: &[(&str, &str)] = &[
     ("win10", "19041.7291"), // 22H2 (file version stays 19041)
     ("win10@22h2", "19041.7291"),
     ("win2019", "17763.8755"), // Windows Server 2019 / 1809
-    // Note: Windows Server 2022 (build 20348) is not indexed by winbindex, so
-    // there's no `win2022` alias — use `--iso` for that build.
+                               // Note: Windows Server 2022 (build 20348) is not indexed by winbindex, so
+                               // there's no `win2022` alias — use `--iso` for that build.
 ];
 
 /// Resolve a `--winver` value to a concrete build number. Friendly aliases map
@@ -102,7 +102,11 @@ pub fn ensure_dll(
         name = basename,
         key = key
     );
-    log::trace!("--winver: fetching {} (key {}) from symbol server", basename, key);
+    log::trace!(
+        "--winver: fetching {} (key {}) from symbol server",
+        basename,
+        key
+    );
     let bytes = http_get(&url)?;
     // The symbol server occasionally serves a small HTML/redirect body for an
     // unknown key; guard against caching garbage by requiring a PE header.
@@ -248,7 +252,12 @@ impl crate::emu::Emu {
             MACHINE_I386
         };
         let folder = self.cfg.maps_folder.clone();
-        if let Err(e) = ensure_dll(std::path::Path::new(&folder), &build, &dll.to_lowercase(), machine) {
+        if let Err(e) = ensure_dll(
+            std::path::Path::new(&folder),
+            &build,
+            &dll.to_lowercase(),
+            machine,
+        ) {
             log::warn!("winver: could not fetch {} (build {}): {}", dll, build, e);
         }
     }

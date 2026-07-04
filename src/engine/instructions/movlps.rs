@@ -4,7 +4,10 @@ use iced_x86::Instruction;
 
 pub fn execute(emu: &mut Emu, ins: &Instruction, instruction_sz: usize, _rep_step: bool) -> bool {
     // movlps moves the LOW quadword; the high quadword of the destination is kept.
-    emu.show_instruction(color!("Cyan"), &crate::emu::decoded_instruction::DecodedInstruction::X86(*ins));
+    emu.show_instruction(
+        color!("Cyan"),
+        &crate::emu::decoded_instruction::DecodedInstruction::X86(*ins),
+    );
 
     let sz0 = emu.get_operand_sz(ins, 0);
     let sz1 = emu.get_operand_sz(ins, 1);
@@ -20,7 +23,8 @@ pub fn execute(emu: &mut Emu, ins: &Instruction, instruction_sz: usize, _rep_ste
             Some(v) => v,
             None => return false,
         };
-        let result = (value0 & 0xFFFFFFFFFFFFFFFF_0000000000000000u128) | (value1 & 0xFFFFFFFFFFFFFFFFu128);
+        let result =
+            (value0 & 0xFFFFFFFFFFFFFFFF_0000000000000000u128) | (value1 & 0xFFFFFFFFFFFFFFFFu128);
         emu.set_operand_xmm_value_128(ins, 0, result);
     } else if sz0 == 128 {
         // `movlps xmm, m64`: load the LOW quadword from memory, keep the high half.

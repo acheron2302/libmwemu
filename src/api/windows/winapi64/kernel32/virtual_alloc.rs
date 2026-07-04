@@ -1,8 +1,8 @@
+use crate::emu;
 use crate::maps::mem64::Permission;
 use crate::winapi::common::virtual_alloc::{permissions, round_up};
 use crate::winapi::winapi64::kernel32::set_last_error;
 use crate::windows::constants;
-use crate::emu;
 
 use super::virtual_alloc_common::{fail, fail_oom};
 

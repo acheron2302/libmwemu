@@ -40,7 +40,10 @@ pub fn gateway(emu: &mut emu::Emu) {
             let status = emu.regs_aarch64().x[0];
             log::info!(
                 "{}** {} linux aarch64 syscall exit({}) {}",
-                emu.colors.light_red, emu.pos, status, emu.colors.nc
+                emu.colors.light_red,
+                emu.pos,
+                status,
+                emu.colors.nc
             );
             emu.stop();
         }
@@ -52,7 +55,12 @@ pub fn gateway(emu: &mut emu::Emu) {
 
             log::info!(
                 "{}** {} linux aarch64 syscall write(fd={}, buf=0x{:x}, count={}) {}",
-                emu.colors.light_red, emu.pos, fd, buf, count, emu.colors.nc
+                emu.colors.light_red,
+                emu.pos,
+                fd,
+                buf,
+                count,
+                emu.colors.nc
             );
 
             if fd == 1 || fd == 2 {
@@ -69,7 +77,12 @@ pub fn gateway(emu: &mut emu::Emu) {
             let count = emu.regs_aarch64().x[2];
             log::info!(
                 "{}** {} linux aarch64 syscall read(fd={}, buf=0x{:x}, count={}) {}",
-                emu.colors.light_red, emu.pos, fd, buf, count, emu.colors.nc
+                emu.colors.light_red,
+                emu.pos,
+                fd,
+                buf,
+                count,
+                emu.colors.nc
             );
             // Stub: return 0 (EOF) -- no real file backing
             emu.regs_aarch64_mut().x[0] = 0;
@@ -82,7 +95,12 @@ pub fn gateway(emu: &mut emu::Emu) {
             let path = emu.maps.read_string(path_addr);
             log::info!(
                 "{}** {} linux aarch64 syscall openat(dirfd={}, \"{}\", 0x{:x}) {}",
-                emu.colors.light_red, emu.pos, dirfd, path, flags, emu.colors.nc
+                emu.colors.light_red,
+                emu.pos,
+                dirfd,
+                path,
+                flags,
+                emu.colors.nc
             );
             // Return fake fd 3
             emu.regs_aarch64_mut().x[0] = 3;
@@ -92,7 +110,10 @@ pub fn gateway(emu: &mut emu::Emu) {
             let fd = emu.regs_aarch64().x[0];
             log::info!(
                 "{}** {} linux aarch64 syscall close(fd={}) {}",
-                emu.colors.light_red, emu.pos, fd, emu.colors.nc
+                emu.colors.light_red,
+                emu.pos,
+                fd,
+                emu.colors.nc
             );
             emu.regs_aarch64_mut().x[0] = 0;
         }
@@ -103,7 +124,12 @@ pub fn gateway(emu: &mut emu::Emu) {
             let whence = emu.regs_aarch64().x[2];
             log::info!(
                 "{}** {} linux aarch64 syscall lseek(fd={}, offset={}, whence={}) {}",
-                emu.colors.light_red, emu.pos, fd, offset, whence, emu.colors.nc
+                emu.colors.light_red,
+                emu.pos,
+                fd,
+                offset,
+                whence,
+                emu.colors.nc
             );
             // Stub: return 0 (beginning of file)
             emu.regs_aarch64_mut().x[0] = 0;
@@ -114,7 +140,11 @@ pub fn gateway(emu: &mut emu::Emu) {
             let cmd = emu.regs_aarch64().x[1];
             log::info!(
                 "{}** {} linux aarch64 syscall fcntl(fd={}, cmd={}) {}",
-                emu.colors.light_red, emu.pos, fd, cmd, emu.colors.nc
+                emu.colors.light_red,
+                emu.pos,
+                fd,
+                cmd,
+                emu.colors.nc
             );
             // Stub: return 0
             emu.regs_aarch64_mut().x[0] = 0;
@@ -126,7 +156,12 @@ pub fn gateway(emu: &mut emu::Emu) {
             let iovcnt = emu.regs_aarch64().x[2];
             log::info!(
                 "{}** {} linux aarch64 syscall writev(fd={}, iov=0x{:x}, iovcnt={}) {}",
-                emu.colors.light_red, emu.pos, fd, iov_addr, iovcnt, emu.colors.nc
+                emu.colors.light_red,
+                emu.pos,
+                fd,
+                iov_addr,
+                iovcnt,
+                emu.colors.nc
             );
             // Walk the iovec array: each entry is (base: u64, len: u64)
             let mut total: u64 = 0;
@@ -136,11 +171,7 @@ pub fn gateway(emu: &mut emu::Emu) {
                 let len = emu.maps.read_qword(entry + 8).unwrap_or(0);
                 if (fd == 1 || fd == 2) && base != 0 && len > 0 {
                     let s = emu.maps.read_string(base);
-                    log::info!(
-                        "{}:  \"{}\"",
-                        if fd == 1 { "stdout" } else { "stderr" },
-                        s
-                    );
+                    log::info!("{}:  \"{}\"", if fd == 1 { "stdout" } else { "stderr" }, s);
                 }
                 total += len;
             }
@@ -151,7 +182,10 @@ pub fn gateway(emu: &mut emu::Emu) {
             let addr = emu.regs_aarch64().x[0];
             log::info!(
                 "{}** {} linux aarch64 syscall brk(0x{:x}) {}",
-                emu.colors.light_red, emu.pos, addr, emu.colors.nc
+                emu.colors.light_red,
+                emu.pos,
+                addr,
+                emu.colors.nc
             );
             if addr == 0 {
                 // Query: return current program break
@@ -163,15 +197,14 @@ pub fn gateway(emu: &mut emu::Emu) {
                         .alloc(initial_heap_sz)
                         .expect("linux aarch64 brk: cannot allocate initial heap");
                     emu.maps
-                        .create_map(
-                            ".heap",
-                            base,
-                            initial_heap_sz,
-                            Permission::READ_WRITE,
-                        )
+                        .create_map(".heap", base, initial_heap_sz, Permission::READ_WRITE)
                         .expect("linux aarch64 brk: cannot create heap map");
                     emu.heap_addr = base + initial_heap_sz;
-                    log::info!("  brk: initial heap at 0x{:x}, break=0x{:x}", base, emu.heap_addr);
+                    log::info!(
+                        "  brk: initial heap at 0x{:x}, break=0x{:x}",
+                        base,
+                        emu.heap_addr
+                    );
                 }
                 emu.regs_aarch64_mut().x[0] = emu.heap_addr;
             } else if addr > emu.heap_addr && emu.heap_addr != 0 {
@@ -207,7 +240,15 @@ pub fn gateway(emu: &mut emu::Emu) {
             let off = emu.regs_aarch64().x[5];
             log::info!(
                 "{}** {} linux aarch64 syscall mmap(0x{:x}, 0x{:x}, 0x{:x}, 0x{:x}, {}, 0x{:x}) {}",
-                emu.colors.light_red, emu.pos, addr, len, prot, flags, fd as i64, off, emu.colors.nc
+                emu.colors.light_red,
+                emu.pos,
+                addr,
+                len,
+                prot,
+                flags,
+                fd as i64,
+                off,
+                emu.colors.nc
             );
             if len == 0 {
                 // MAP_FAILED = -1
@@ -235,7 +276,11 @@ pub fn gateway(emu: &mut emu::Emu) {
             let len = emu.regs_aarch64().x[1];
             log::info!(
                 "{}** {} linux aarch64 syscall munmap(0x{:x}, 0x{:x}) {}",
-                emu.colors.light_red, emu.pos, addr, len, emu.colors.nc
+                emu.colors.light_red,
+                emu.pos,
+                addr,
+                len,
+                emu.colors.nc
             );
             // Stub: return success
             emu.regs_aarch64_mut().x[0] = 0;
@@ -247,7 +292,12 @@ pub fn gateway(emu: &mut emu::Emu) {
             let prot = emu.regs_aarch64().x[2];
             log::info!(
                 "{}** {} linux aarch64 syscall mprotect(0x{:x}, 0x{:x}, 0x{:x}) {}",
-                emu.colors.light_red, emu.pos, addr, len, prot, emu.colors.nc
+                emu.colors.light_red,
+                emu.pos,
+                addr,
+                len,
+                prot,
+                emu.colors.nc
             );
             // Stub: return success
             emu.regs_aarch64_mut().x[0] = 0;
@@ -258,7 +308,11 @@ pub fn gateway(emu: &mut emu::Emu) {
             let request = emu.regs_aarch64().x[1];
             log::info!(
                 "{}** {} linux aarch64 syscall ioctl(fd={}, 0x{:x}) {}",
-                emu.colors.light_red, emu.pos, fd, request, emu.colors.nc
+                emu.colors.light_red,
+                emu.pos,
+                fd,
+                request,
+                emu.colors.nc
             );
             // Stub: return 0 (success)
             emu.regs_aarch64_mut().x[0] = 0;
@@ -269,7 +323,11 @@ pub fn gateway(emu: &mut emu::Emu) {
             let statbuf = emu.regs_aarch64().x[1];
             log::info!(
                 "{}** {} linux aarch64 syscall fstat(fd={}, buf=0x{:x}) {}",
-                emu.colors.light_red, emu.pos, fd, statbuf, emu.colors.nc
+                emu.colors.light_red,
+                emu.pos,
+                fd,
+                statbuf,
+                emu.colors.nc
             );
             // Zero out the stat buffer (144 bytes on aarch64 linux)
             for i in 0..144u64 {
@@ -286,7 +344,13 @@ pub fn gateway(emu: &mut emu::Emu) {
             let path = emu.maps.read_string(path_addr);
             log::info!(
                 "{}** {} linux aarch64 syscall newfstatat(dirfd={}, \"{}\", buf=0x{:x}, flags=0x{:x}) {}",
-                emu.colors.light_red, emu.pos, dirfd, path, statbuf, flags, emu.colors.nc
+                emu.colors.light_red,
+                emu.pos,
+                dirfd,
+                path,
+                statbuf,
+                flags,
+                emu.colors.nc
             );
             // Zero out the stat buffer
             for i in 0..144u64 {
@@ -299,7 +363,10 @@ pub fn gateway(emu: &mut emu::Emu) {
             let tidptr = emu.regs_aarch64().x[0];
             log::info!(
                 "{}** {} linux aarch64 syscall set_tid_address(tidptr=0x{:x}) => 1 {}",
-                emu.colors.light_red, emu.pos, tidptr, emu.colors.nc
+                emu.colors.light_red,
+                emu.pos,
+                tidptr,
+                emu.colors.nc
             );
             emu.regs_aarch64_mut().x[0] = 1; // fake tid
         }
@@ -309,7 +376,11 @@ pub fn gateway(emu: &mut emu::Emu) {
             let op = emu.regs_aarch64().x[1];
             log::info!(
                 "{}** {} linux aarch64 syscall futex(0x{:x}, op={}) => 0 {}",
-                emu.colors.light_red, emu.pos, uaddr, op, emu.colors.nc
+                emu.colors.light_red,
+                emu.pos,
+                uaddr,
+                op,
+                emu.colors.nc
             );
             emu.regs_aarch64_mut().x[0] = 0;
         }
@@ -317,7 +388,9 @@ pub fn gateway(emu: &mut emu::Emu) {
         SYS_GETPID => {
             log::info!(
                 "{}** {} linux aarch64 syscall getpid() => 1000 {}",
-                emu.colors.light_red, emu.pos, emu.colors.nc
+                emu.colors.light_red,
+                emu.pos,
+                emu.colors.nc
             );
             emu.regs_aarch64_mut().x[0] = 1000;
         }
@@ -325,7 +398,9 @@ pub fn gateway(emu: &mut emu::Emu) {
         SYS_GETTID => {
             log::info!(
                 "{}** {} linux aarch64 syscall gettid() => 1000 {}",
-                emu.colors.light_red, emu.pos, emu.colors.nc
+                emu.colors.light_red,
+                emu.pos,
+                emu.colors.nc
             );
             emu.regs_aarch64_mut().x[0] = 1000;
         }
@@ -336,7 +411,12 @@ pub fn gateway(emu: &mut emu::Emu) {
             let oldact = emu.regs_aarch64().x[2];
             log::info!(
                 "{}** {} linux aarch64 syscall rt_sigaction(sig={}, act=0x{:x}, oldact=0x{:x}) => 0 {}",
-                emu.colors.light_red, emu.pos, signum, act, oldact, emu.colors.nc
+                emu.colors.light_red,
+                emu.pos,
+                signum,
+                act,
+                oldact,
+                emu.colors.nc
             );
             emu.regs_aarch64_mut().x[0] = 0;
         }
@@ -347,7 +427,12 @@ pub fn gateway(emu: &mut emu::Emu) {
             let oldset = emu.regs_aarch64().x[2];
             log::info!(
                 "{}** {} linux aarch64 syscall rt_sigprocmask(how={}, set=0x{:x}, oldset=0x{:x}) => 0 {}",
-                emu.colors.light_red, emu.pos, how, set, oldset, emu.colors.nc
+                emu.colors.light_red,
+                emu.pos,
+                how,
+                set,
+                oldset,
+                emu.colors.nc
             );
             emu.regs_aarch64_mut().x[0] = 0;
         }
@@ -357,7 +442,11 @@ pub fn gateway(emu: &mut emu::Emu) {
             let tp = emu.regs_aarch64().x[1];
             log::info!(
                 "{}** {} linux aarch64 syscall clock_gettime(clockid={}, tp=0x{:x}) => 0 {}",
-                emu.colors.light_red, emu.pos, clockid, tp, emu.colors.nc
+                emu.colors.light_red,
+                emu.pos,
+                clockid,
+                tp,
+                emu.colors.nc
             );
             // Write fake time: tv_sec=1000, tv_nsec=0
             if tp != 0 {
@@ -372,7 +461,11 @@ pub fn gateway(emu: &mut emu::Emu) {
             let count = emu.regs_aarch64().x[1];
             log::info!(
                 "{}** {} linux aarch64 syscall getrandom(0x{:x}, {}) {}",
-                emu.colors.light_red, emu.pos, buf, count, emu.colors.nc
+                emu.colors.light_red,
+                emu.pos,
+                buf,
+                count,
+                emu.colors.nc
             );
             // Write zeros (not random, but functional)
             for i in 0..count {
@@ -385,18 +478,16 @@ pub fn gateway(emu: &mut emu::Emu) {
             let buf = emu.regs_aarch64().x[0];
             log::info!(
                 "{}** {} linux aarch64 syscall uname(buf=0x{:x}) => 0 {}",
-                emu.colors.light_red, emu.pos, buf, emu.colors.nc
+                emu.colors.light_red,
+                emu.pos,
+                buf,
+                emu.colors.nc
             );
             if buf != 0 && emu.maps.is_valid_ptr(buf) {
                 // utsname struct: 6 fields of 65 bytes each = 390 bytes
                 // sysname, nodename, release, version, machine, domainname
                 let fields: [&[u8]; 6] = [
-                    b"Linux",
-                    b"mwemu",
-                    b"5.15.0",
-                    b"#1 SMP",
-                    b"aarch64",
-                    b"(none)",
+                    b"Linux", b"mwemu", b"5.15.0", b"#1 SMP", b"aarch64", b"(none)",
                 ];
                 for (i, field) in fields.iter().enumerate() {
                     let offset = buf + (i as u64) * 65;

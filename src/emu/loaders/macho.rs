@@ -65,7 +65,11 @@ impl Emu {
 
     /// Load a Mach-O dylib from disk and map its segments into memory.
     /// Returns (base_address, vec of (symbol_name, absolute_address)).
-    pub fn map_dylib_macho64(&mut self, filename: &str, lib_name: &str) -> (u64, Vec<(String, u64)>) {
+    pub fn map_dylib_macho64(
+        &mut self,
+        filename: &str,
+        lib_name: &str,
+    ) -> (u64, Vec<(String, u64)>) {
         use crate::loaders::macho::macho64::prot_to_permission;
 
         let dylib = Macho64::parse(filename).expect("cannot parse dylib");
@@ -95,7 +99,10 @@ impl Emu {
             let mem = self
                 .maps
                 .create_map(&map_name, seg_addr, seg.vmsize, perm)
-                .expect(&format!("cannot create map for dylib segment '{}'", map_name));
+                .expect(&format!(
+                    "cannot create map for dylib segment '{}'",
+                    map_name
+                ));
 
             if !seg.data.is_empty() {
                 mem.force_write_bytes(seg_addr, &seg.data);

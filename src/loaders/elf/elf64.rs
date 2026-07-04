@@ -1,6 +1,6 @@
 use crate::err::MwemuError;
-use crate::maps::mem64::{Mem64, Permission};
 use crate::maps::Maps;
+use crate::maps::mem64::{Mem64, Permission};
 use crate::windows::constants;
 use std::collections::HashMap;
 use std::fs::File;
@@ -419,7 +419,8 @@ impl Elf64 {
             } else {
                 log::warn!(
                     "elf64: relocation target 0x{:x} for {} is not mapped",
-                    patch_addr, what
+                    patch_addr,
+                    what
                 );
             }
         }
@@ -470,9 +471,7 @@ impl Elf64 {
                 continue;
             }
 
-            if r_type != R_X86_64_GLOB_DAT
-                && r_type != R_X86_64_JUMP_SLOT
-                && r_type != R_X86_64_64
+            if r_type != R_X86_64_GLOB_DAT && r_type != R_X86_64_JUMP_SLOT && r_type != R_X86_64_64
             {
                 off += rela_ent;
                 continue;
@@ -523,11 +522,7 @@ impl Elf64 {
 
     /// Apply AArch64 relocations (.rela.dyn and .rela.plt) using section headers.
     /// Handles R_AARCH64_GLOB_DAT and R_AARCH64_JUMP_SLOT.
-    pub fn apply_rela_aarch64(
-        &mut self,
-        maps: &mut Maps,
-        export_map: &HashMap<String, u64>,
-    ) {
+    pub fn apply_rela_aarch64(&mut self, maps: &mut Maps, export_map: &HashMap<String, u64>) {
         let rela_sections: Vec<(u64, u64)> = self
             .elf_shdr
             .iter()
@@ -587,9 +582,10 @@ impl Elf64 {
         }
 
         // Fallback: read from raw binary
-        let dynsym_shdr = self.elf_shdr.iter().find(|shdr| {
-            self.get_section_name(shdr.sh_name as usize) == ".dynsym"
-        });
+        let dynsym_shdr = self
+            .elf_shdr
+            .iter()
+            .find(|shdr| self.get_section_name(shdr.sh_name as usize) == ".dynsym");
         let Some(shdr) = dynsym_shdr else {
             return String::new();
         };
@@ -915,7 +911,10 @@ impl Elf64 {
                 Err(e) => {
                     log::warn!(
                         "segment map {} failed at 0x{:x} size 0x{:x}: {:?}",
-                        map_name, map_start, map_size, e
+                        map_name,
+                        map_start,
+                        map_size,
+                        e
                     );
                 }
             }
@@ -1043,7 +1042,12 @@ impl Elf64 {
             return false;
         }
 
-        if raw[0] != 0x7f || raw[1] != b'E' || raw[2] != b'L' || raw[3] != b'F' || raw[4] != ELFCLASS64 {
+        if raw[0] != 0x7f
+            || raw[1] != b'E'
+            || raw[2] != b'L'
+            || raw[3] != b'F'
+            || raw[4] != ELFCLASS64
+        {
             return false;
         }
 

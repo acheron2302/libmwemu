@@ -1,6 +1,12 @@
 use std::io::Write as _;
 
-use crate::{windows::constants, emu::Emu, flags::Flags, regs64::Regs64, regs_aarch64::{RegsAarch64, FlagsNZCV}};
+use crate::{
+    emu::Emu,
+    flags::Flags,
+    regs_aarch64::{FlagsNZCV, RegsAarch64},
+    regs64::Regs64,
+    windows::constants,
+};
 
 impl Emu {
     pub fn open_trace_file(&mut self) {
@@ -21,7 +27,9 @@ impl Emu {
         if self.cfg.arch.is_aarch64() {
             let regs = *self.regs_aarch64();
             match &mut self.threads[self.current_thread_id].arch {
-                crate::threading::context::ArchThreadState::AArch64 { pre_op_regs, .. } => *pre_op_regs = regs,
+                crate::threading::context::ArchThreadState::AArch64 { pre_op_regs, .. } => {
+                    *pre_op_regs = regs
+                }
                 _ => {}
             }
         } else {
@@ -36,7 +44,9 @@ impl Emu {
         if self.cfg.arch.is_aarch64() {
             let regs = *self.regs_aarch64();
             match &mut self.threads[self.current_thread_id].arch {
-                crate::threading::context::ArchThreadState::AArch64 { post_op_regs, .. } => *post_op_regs = regs,
+                crate::threading::context::ArchThreadState::AArch64 { post_op_regs, .. } => {
+                    *post_op_regs = regs
+                }
                 _ => {}
             }
         } else {
@@ -51,7 +61,8 @@ impl Emu {
         let index = self.pos - 1;
         let pc = self.pc();
 
-        let (instruction_size, instruction_bytes, output) = if let Some(decoded) = self.last_decoded {
+        let (instruction_size, instruction_bytes, output) = if let Some(decoded) = self.last_decoded
+        {
             let sz = decoded.size();
             let bytes = self.maps.read_bytes(pc, sz).to_vec();
             let out = self.format_instruction(&decoded);
@@ -190,16 +201,38 @@ impl Emu {
             );
         }
 
+        let trace_address = pre_op_regs.rip;
+        let registers = format!("{} {}", registers, flags);
+        let bytes = instruction_bytes
+            .iter()
+            .map(|b| format!("{:02x}", b))
+            .collect::<Vec<_>>()
+            .join(" ");
+
         log::trace!(
-            r#"trace: "{index}","{address:016X}","{bytes:02x?}","{disassembly}","{registers}","{memory}","{comments}""#,
+            r#"trace: "{index}","{address:016X}","{bytes}","{disassembly}","{registers}","{memory}","{comments}""#,
             index = index + 1,
-            address = pre_op_regs.rip,
-            bytes = instruction_bytes,
+            address = trace_address,
+            bytes = bytes,
             disassembly = output,
-            registers = format!("{} {}", registers, flags),
+            registers = registers,
             memory = memory,
             comments = comments
         );
+
+        if let Some(trace_file) = &mut self.trace_file {
+            writeln!(
+                trace_file,
+                r#""{index}","{address:016X}","{bytes}","{disassembly}","{registers}","{memory}","{comments}""#,
+                index = index + 1,
+                address = trace_address,
+                bytes = bytes,
+                disassembly = output,
+                registers = registers,
+                memory = memory,
+                comments = comments
+            ).ok();
+        }
     }
 
     /// display specific register.

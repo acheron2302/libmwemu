@@ -7,8 +7,9 @@ use iced_x86::Code;
 /// caring which architecture is active.
 ///
 /// The enum is `Copy` (both variants are small value types) and imposes no
-/// heap allocation.  At runtime exactly one variant is ever constructed, so
-/// every `match` is a perfectly-predicted branch — effectively zero cost.
+/// heap allocation. It is cheap to construct, but the hottest no-observer
+/// execution path avoids constructing it until hooks, tracing, or display code
+/// need the architecture-neutral view.
 #[derive(Clone, Copy)]
 pub enum DecodedInstruction {
     X86(iced_x86::Instruction),
@@ -44,13 +45,10 @@ impl DecodedInstruction {
     #[inline]
     pub fn is_return(&self) -> bool {
         match self {
-            DecodedInstruction::X86(ins) => matches!(
-                ins.code(),
-                Code::Retnw | Code::Retnd | Code::Retnq
-            ),
-            DecodedInstruction::AArch64(ins) => {
-                ins.opcode == yaxpeax_arm::armv8::a64::Opcode::RET
+            DecodedInstruction::X86(ins) => {
+                matches!(ins.code(), Code::Retnw | Code::Retnd | Code::Retnq)
             }
+            DecodedInstruction::AArch64(ins) => ins.opcode == yaxpeax_arm::armv8::a64::Opcode::RET,
         }
     }
 

@@ -4,7 +4,10 @@ use iced_x86::Instruction;
 
 // PMINUB xmm1, xmm2/m128 : per-byte unsigned minimum, dest = min(dest, src).
 pub fn execute(emu: &mut Emu, ins: &Instruction, _instruction_sz: usize, _rep_step: bool) -> bool {
-    emu.show_instruction(color!("Green"), &crate::emu::decoded_instruction::DecodedInstruction::X86(*ins));
+    emu.show_instruction(
+        color!("Green"),
+        &crate::emu::decoded_instruction::DecodedInstruction::X86(*ins),
+    );
 
     let source1 = match emu.get_operand_xmm_value_128(ins, 0, true) {
         Some(v) => v,

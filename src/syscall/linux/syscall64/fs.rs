@@ -1,6 +1,6 @@
 use crate::emu;
-use crate::windows::constants;
 use crate::winapi::helper;
+use crate::windows::constants;
 use std::fs::File;
 use std::io::{BufReader, Read, Seek, SeekFrom};
 use std::path::Path;
@@ -43,7 +43,11 @@ pub(super) fn handle_syscall64_ioctl(emu: &mut emu::Emu) {
     emu.regs_mut().rax = 0xffffffffffffffe6; // -ENOTTY
     log::trace!(
         "{}** {} syscall ioctl(fd:{} cmd:0x{:x}) =-ENOTTY {}",
-        emu.colors.light_red, emu.pos, fd, cmd, emu.colors.nc
+        emu.colors.light_red,
+        emu.pos,
+        fd,
+        cmd,
+        emu.colors.nc
     );
 }
 
@@ -111,7 +115,13 @@ pub(super) fn handle_syscall64_getdents64(emu: &mut emu::Emu) {
     }
     log::trace!(
         "{}** {} syscall getdents64(fd:{} '{}') ={} ({} entries) {}",
-        emu.colors.light_red, emu.pos, fd, dir_path, n, idx - start, emu.colors.nc
+        emu.colors.light_red,
+        emu.pos,
+        fd,
+        dir_path,
+        n,
+        idx - start,
+        emu.colors.nc
     );
     emu.regs_mut().rax = n;
 }
@@ -148,7 +158,12 @@ pub(super) fn handle_syscall64_writev(emu: &mut emu::Emu) {
     }
     log::trace!(
         "{}** {} syscall writev(fd:{} iovcnt:{}) ={} {}",
-        emu.colors.light_red, emu.pos, fd, iovcnt, total, emu.colors.nc
+        emu.colors.light_red,
+        emu.pos,
+        fd,
+        iovcnt,
+        total,
+        emu.colors.nc
     );
     emu.regs_mut().rax = total;
 }
@@ -183,7 +198,14 @@ pub(super) fn handle_syscall64_pread64(emu: &mut emu::Emu) {
     let n = data.len() as u64;
     log::trace!(
         "{}** {} syscall pread64(fd:{} buf:0x{:x} sz:{} off:{}) ={} {}",
-        emu.colors.light_red, emu.pos, fd as i32, buff, sz, off, n, emu.colors.nc
+        emu.colors.light_red,
+        emu.pos,
+        fd as i32,
+        buff,
+        sz,
+        off,
+        n,
+        emu.colors.nc
     );
     emu.regs_mut().rax = n;
 }
@@ -263,7 +285,12 @@ pub(super) fn handle_syscall64_write(emu: &mut emu::Emu) {
     }
     log::trace!(
         "{}** {} syscall write(fd:{} buf:0x{:x} sz:{}) {}",
-        emu.colors.light_red, emu.pos, fd, buff, sz, emu.colors.nc
+        emu.colors.light_red,
+        emu.pos,
+        fd,
+        buff,
+        sz,
+        emu.colors.nc
     );
     emu.regs_mut().rax = sz;
 }
@@ -420,6 +447,12 @@ pub(super) fn handle_syscall64_lseek(emu: &mut emu::Emu) {
     emu.regs_mut().rax = new;
     log::trace!(
         "{}** {} syscall lseek(fd:{} off:{} whence:{}) ={} {}",
-        emu.colors.light_red, emu.pos, fd, offset, whence, new, emu.colors.nc
+        emu.colors.light_red,
+        emu.pos,
+        fd,
+        offset,
+        whence,
+        new,
+        emu.colors.nc
     );
 }

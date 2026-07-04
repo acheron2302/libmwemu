@@ -33,7 +33,7 @@ impl Emu {
     pub(crate) fn ensure_instruction_cache_populated(
         &mut self,
         pc: u64,
-        block: &[u8],
+        block: &mut Vec<u8>,
         arch_bits: u32,
         is_aarch64: bool,
     ) -> Result<(), MwemuError> {
@@ -58,6 +58,21 @@ impl Emu {
             super::ArchState::X86 {
                 instruction_cache, ..
             } => {
+                let code = match self.maps.get_mem_by_addr(pc) {
+                    Some(code) => code,
+                    None => {
+                        log::trace!("code flow to unmapped address 0x{:x}", pc);
+                        Console::spawn_console(self);
+                        return Err(MwemuError::new("cannot read program counter"));
+                    }
+                };
+
+                let block_slice = code.read_bytes(pc, constants::BLOCK_LEN);
+                if block_slice.len() != block.len() {
+                    block.resize(block_slice.len(), 0);
+                }
+                block.clone_from_slice(block_slice);
+
                 let mut decoder = Decoder::with_ip(arch_bits, block, pc, DecoderOptions::NONE);
                 self.rep = None;
                 let addition = block.len().min(16);
@@ -66,6 +81,20 @@ impl Emu {
             super::ArchState::AArch64 {
                 instruction_cache, ..
             } => {
+                let code = match self.maps.get_mem_by_addr(pc) {
+                    Some(code) => code,
+                    None => {
+                        log::trace!("code flow to unmapped address 0x{:x}", pc);
+                        Console::spawn_console(self);
+                        return Err(MwemuError::new("cannot read program counter"));
+                    }
+                };
+
+                let block_slice = code.read_bytes(pc, constants::BLOCK_LEN);
+                if block_slice.len() != block.len() {
+                    block.resize(block_slice.len(), 0);
+                }
+                block.clone_from_slice(block_slice);
                 instruction_cache.insert_from_block(block, pc);
             }
         }

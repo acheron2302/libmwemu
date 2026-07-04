@@ -5,7 +5,10 @@ use iced_x86::Instruction;
 // PCMPISTRI xmm1, xmm2/m128, imm8 : SSE4.2 packed compare of implicit-length
 // (null-terminated) strings, returning an index in ECX and setting flags.
 pub fn execute(emu: &mut Emu, ins: &Instruction, _instruction_sz: usize, _rep_step: bool) -> bool {
-    emu.show_instruction(color!("Cyan"), &crate::emu::decoded_instruction::DecodedInstruction::X86(*ins));
+    emu.show_instruction(
+        color!("Cyan"),
+        &crate::emu::decoded_instruction::DecodedInstruction::X86(*ins),
+    );
 
     let op0 = emu.get_operand_xmm_value_128(ins, 0, true).unwrap_or(0); // string1
     let op1 = match emu.get_operand_xmm_value_128(ins, 1, true) {
@@ -26,10 +29,18 @@ pub fn execute(emu: &mut Emu, ins: &Instruction, _instruction_sz: usize, _rep_st
     let elem = |val: u128, idx: usize| -> i32 {
         if is_word {
             let w = ((val >> (idx * 16)) & 0xffff) as u16;
-            if is_signed { (w as i16) as i32 } else { w as i32 }
+            if is_signed {
+                (w as i16) as i32
+            } else {
+                w as i32
+            }
         } else {
             let b = ((val >> (idx * 8)) & 0xff) as u8;
-            if is_signed { (b as i8) as i32 } else { b as i32 }
+            if is_signed {
+                (b as i8) as i32
+            } else {
+                b as i32
+            }
         }
     };
     let is_null = |val: u128, idx: usize| -> bool {
@@ -87,7 +98,7 @@ pub fn execute(emu: &mut Emu, ins: &Instruction, _instruction_sz: usize, _rep_st
                 }
                 r
             }
-            2 => overridden(i, i), // EqualEach
+            2 => overridden(i, i),                           // EqualEach
             _ => (0..(n - i)).all(|j| overridden(j, i + j)), // EqualOrdered (substring)
         };
         if bit {

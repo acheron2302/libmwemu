@@ -6,7 +6,10 @@ use iced_x86::Instruction;
 /// word position selected by `imm8 & 7` of the destination xmm, leaving the
 /// other seven words unchanged.
 pub fn execute(emu: &mut Emu, ins: &Instruction, _instruction_sz: usize, _rep_step: bool) -> bool {
-    emu.show_instruction(color!("Green"), &crate::emu::decoded_instruction::DecodedInstruction::X86(*ins));
+    emu.show_instruction(
+        color!("Green"),
+        &crate::emu::decoded_instruction::DecodedInstruction::X86(*ins),
+    );
 
     let mut dest = match emu.get_operand_xmm_value_128(ins, 0, true) {
         Some(v) => v,

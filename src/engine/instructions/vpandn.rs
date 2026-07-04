@@ -4,7 +4,10 @@ use iced_x86::Instruction;
 
 // VPANDN dest, src1, src2: dest = (NOT src1) AND src2.
 pub fn execute(emu: &mut Emu, ins: &Instruction, _instruction_sz: usize, _rep_step: bool) -> bool {
-    emu.show_instruction(color!("Green"), &crate::emu::decoded_instruction::DecodedInstruction::X86(*ins));
+    emu.show_instruction(
+        color!("Green"),
+        &crate::emu::decoded_instruction::DecodedInstruction::X86(*ins),
+    );
 
     match emu.get_operand_sz(ins, 1) {
         128 => {
