@@ -2,6 +2,7 @@ use crate::fpu::FPU;
 use crate::tests::helpers;
 
 #[test]
+#[allow(clippy::approx_constant)]
 // basic tests of some fpu functionst.
 pub fn fpu_conversions() {
     helpers::setup();

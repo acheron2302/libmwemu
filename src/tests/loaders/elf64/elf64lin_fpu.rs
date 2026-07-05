@@ -2,6 +2,7 @@ use crate::tests::helpers;
 use crate::*;
 
 #[test]
+#[allow(clippy::approx_constant)]
 // this tests the fpu unit.
 pub fn elf64lin_fpu() {
     helpers::setup();
