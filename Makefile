@@ -11,7 +11,7 @@ endif
 TEST_ZIP_URL := https://github.com/mwemuorg/libmwemu/releases/download/tests/test.zip
 TEST_ZIP_PASSWORD := mwemuTestSystem
 
-.PHONY: build release tests fmt clippy clean
+.PHONY: build release tests fmt clippy clippy-release clean
 
 build:
 	cargo build $(CARGO_TARGET)
@@ -41,6 +41,9 @@ fmt:
 
 clippy:
 	cargo clippy
+
+clippy-release:
+	cargo clippy --release --lib --bins $(CARGO_TARGET)
 
 clean:
 	cargo clean
