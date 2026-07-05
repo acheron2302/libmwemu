@@ -183,10 +183,7 @@ impl Emu {
             64 => match self.maps.read_qword(addr) {
                 Some(v) => {
                     if self.cfg.trace_mem {
-                        let name = match self.maps.get_addr_name(addr) {
-                            Some(n) => n,
-                            None => "not mapped",
-                        };
+                        let name = self.maps.get_addr_name(addr).unwrap_or("not mapped");
                         let memory_operation = MemoryOperation {
                             pos: self.pos,
                             rip: self.pc(),
@@ -218,7 +215,7 @@ impl Emu {
                         let name = self
                             .maps
                             .get_addr_name(addr)
-                            .unwrap_or_else(|| "not mapped");
+                            .unwrap_or("not mapped");
                         let memory_operation = MemoryOperation {
                             pos: self.pos,
                             rip: self.pc(),
@@ -250,7 +247,7 @@ impl Emu {
                         let name = self
                             .maps
                             .get_addr_name(addr)
-                            .unwrap_or_else(|| "not mapped");
+                            .unwrap_or("not mapped");
                         let memory_operation = MemoryOperation {
                             pos: self.pos,
                             rip: self.pc(),
@@ -282,7 +279,7 @@ impl Emu {
                         let name = self
                             .maps
                             .get_addr_name(addr)
-                            .unwrap_or_else(|| "not mapped");
+                            .unwrap_or("not mapped");
                         let memory_operation = MemoryOperation {
                             pos: self.pos,
                             rip: self.pc(),
@@ -330,7 +327,7 @@ impl Emu {
         panic!("writting in non mapped memory");
         }*/
 
-        let name = self.maps.get_addr_name(addr).unwrap_or_else(|| "error");
+        let name = self.maps.get_addr_name(addr).unwrap_or("error");
 
         if name == "code" {
             if self.cfg.verbose >= 1 {

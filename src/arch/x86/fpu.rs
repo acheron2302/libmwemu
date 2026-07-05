@@ -21,6 +21,12 @@ pub struct FPUState {
     pub reserved2: [u8; 224], // Reserved
 }
 
+impl Default for FPUState {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl FPUState {
     pub fn new() -> Self {
         Self {
@@ -261,11 +267,11 @@ impl FPU {
     }
 
     pub fn set_st(&mut self, i: usize, value: f64) {
-        self.st.get_mut(i).map(|st| st.set_f64(value));
+        if let Some(st) = self.st.get_mut(i) { st.set_f64(value) }
     }
 
     pub fn set_st_u80(&mut self, i: usize, value: u128) {
-        self.st.get_mut(i).map(|st| st.set(value));
+        if let Some(st) = self.st.get_mut(i) { st.set(value) }
     }
 
     // only use from test.rs
@@ -289,11 +295,11 @@ impl FPU {
     }
 
     pub fn get_st_u80(&mut self, i: usize) -> u128 {
-        return self.st.get(i).get();
+        self.st.get(i).get()
     }
 
     pub fn get_st(&mut self, i: usize) -> f64 {
-        return self.st.get(i).get_f64();
+        self.st.get(i).get_f64()
     }
 
     pub fn xchg_st(&mut self, i: usize) {
@@ -302,38 +308,38 @@ impl FPU {
     }
 
     pub fn clear_st(&mut self, i: usize) {
-        self.st.get_mut(i).map(|st| st.set(0));
+        if let Some(st) = self.st.get_mut(i) { st.set(0) }
     }
 
     pub fn neg_st(&mut self, i: usize) {
-        self.st.get_mut(i).map(|st| st.neg());
+        if let Some(st) = self.st.get_mut(i) { st.neg() }
     }
 
     pub fn move_to_st0(&mut self, i: usize) {
         let v = self.st.get(i).get();
-        self.st.get_mut(0).map(|st| st.set(v));
+        if let Some(st) = self.st.get_mut(0) { st.set(v) }
     }
 
     pub fn add_to_st0(&mut self, i: usize) {
         let v = self.st.get(i);
-        self.st.get_mut(0).map(|st| st.add(v));
+        if let Some(st) = self.st.get_mut(0) { st.add(v) }
     }
 
     pub fn add(&mut self, i: usize, j: usize) {
         let v = self.st.get(j);
-        self.st.get_mut(i).map(|st| st.add(v));
+        if let Some(st) = self.st.get_mut(i) { st.add(v) }
     }
 
     pub fn sub(&mut self, i: usize, j: usize) {
         let v = self.st.get(j);
-        self.st.get_mut(i).map(|st| st.sub(v));
+        if let Some(st) = self.st.get_mut(i) { st.sub(v) }
     }
 
     pub fn subr(&mut self, i: usize, j: usize) {
-        let a = self.st.get(i).clone();
-        let mut b = self.st.get(j).clone();
+        let a = self.st.get(i);
+        let mut b = self.st.get(j);
         b.sub(a);
-        self.st.get_mut(i).map(|st| st.set(b.get()));
+        if let Some(st) = self.st.get_mut(i) { st.set(b.get()) }
     }
 
     pub fn push_f64(&mut self, value: f64) {
@@ -357,30 +363,30 @@ impl FPU {
     }
 
     pub fn pop2(&mut self) -> u128 {
-        let v = match self.st.pop() {
+        
+        match self.st.pop() {
             Some(f80val) => f80val.get(),
             None => 0,
-        };
-        v
+        }
     }
 
     pub fn pop_f64(&mut self) -> f64 {
-        let v = match self.st.pop() {
+        
+        match self.st.pop() {
             Some(f80val) => f80val.get_f64(),
             None => 0.0,
-        };
-        v
+        }
     }
 
     pub fn fyl2x(&mut self) {
         let v = self.st.get(1).get_f64() * self.st.get(0).get_f64().log2();
-        self.st.get_mut(1).map(|st| st.set_f64(v));
+        if let Some(st) = self.st.get_mut(1) { st.set_f64(v) }
         self.st.pop();
     }
 
     pub fn fyl2xp1(&mut self) {
         let v = self.st.get(1).get_f64() * (self.st.get(0).get_f64().log2() + 1.0);
-        self.st.get_mut(1).map(|st| st.set_f64(v));
+        if let Some(st) = self.st.get_mut(1) { st.set_f64(v) }
         self.st.pop();
     }
 
@@ -431,13 +437,13 @@ impl FPU {
     pub fn set_streg_f80(&mut self, reg: Register, value: u128) {
         //println!("{:?} {}", reg, value);
         let idx = self.reg_to_idx(reg);
-        self.st.get_mut(idx).map(|st| st.set(value));
+        if let Some(st) = self.st.get_mut(idx) { st.set(value) }
     }
 
     pub fn set_streg(&mut self, reg: Register, value: f64) {
         //println!("{:?} {}", reg, value);
         let idx = self.reg_to_idx(reg);
-        self.st.get_mut(idx).map(|st| st.set_f64(value));
+        if let Some(st) = self.st.get_mut(idx) { st.set_f64(value) }
     }
 
     pub fn frexp(&self, value: f64) -> (f64, i32) {
@@ -484,10 +490,10 @@ impl FPU {
         state.rdp = self.operand_ptr;
         state.mxcsr = self.mxcsr;
         state.mxcsr_mask = self.mxcsr;
-        state.st = self.st.clone();
+        state.st = self.st;
         //state.st = self.convert_st(self.st.clone());
-        state.xmm = self.xmm.clone();
-        return state;
+        state.xmm = self.xmm;
+        state
     }
 
     pub fn fxrstor(&mut self, state: FPUState) {
@@ -502,7 +508,7 @@ impl FPU {
         // Convert the packed 128-bit ST registers back to f64 values
 
         for i in 0..8 {
-            self.st.get_mut(i).map(|st| st.fix());
+            if let Some(st) = self.st.get_mut(i) { st.fix() }
         }
 
         self.xmm = state.xmm;

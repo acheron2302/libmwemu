@@ -107,7 +107,7 @@ impl O1Heap {
         let hashes: HashMap<u32, RCFrag, nohash_hasher::BuildNoHashHasher<u32>> =
             HashMap::default();
         let mut heap = Self {
-            base: base,
+            base,
             bins: vec![None; NUM_BINS_MAX],
             hashes,
             nonempty_bin_mask: 0,

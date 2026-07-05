@@ -486,7 +486,7 @@ impl Script {
                     };
                     emu.maps
                         .create_map(args[1], addr, sz, Permission::READ_WRITE_EXECUTE);
-                    log::trace!("allocated {} at 0x{:x} sz: {}", &args[1], addr, sz);
+                    log::trace!("allocated {} at 0x{:x} sz: {}", args[1], addr, sz);
                     self.result = addr;
                 }
                 "mca" => {
@@ -505,7 +505,7 @@ impl Script {
                     };
                     emu.maps
                         .create_map(args[1], addr, sz, Permission::READ_WRITE_EXECUTE);
-                    log::trace!("allocated {} at 0x{:x} sz: {}", &args[1], addr, sz);
+                    log::trace!("allocated {} at 0x{:x} sz: {}", args[1], addr, sz);
                 }
                 "ml" => {
                     // ml <mapname> <file>
@@ -653,7 +653,7 @@ impl Script {
                         }
                     };
 
-                    if sz <= 0 {
+                    if sz == 0 {
                         log::trace!("error in line {}, bad size", i);
                         return;
                     }
@@ -796,7 +796,7 @@ impl Script {
                         .collect::<Vec<_>>()
                         .join(" ");
 
-                    if emu.maps.search_spaced_bytes(&bytes, args[1]).len() == 0 {
+                    if emu.maps.search_spaced_bytes(&bytes, args[1]).is_empty() {
                         log::trace!("bytes not found.");
                     }
                 }

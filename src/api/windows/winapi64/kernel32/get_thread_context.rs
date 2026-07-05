@@ -5,7 +5,7 @@ pub fn GetThreadContext(emu: &mut emu::Emu) {
     let hndl = emu.regs().rcx;
     let ctx_ptr = emu.regs().rdx;
 
-    let ctx = context64::Context64::new(&emu.regs());
+    let ctx = context64::Context64::new(emu.regs());
     ctx.save(ctx_ptr, &mut emu.maps);
 
     log_red!(emu, "kernel32!GetThreadContext");

@@ -177,7 +177,7 @@ fn RtlCopyMemory(emu: &mut emu::Emu) {
     let src = emu.regs().rdx;
     let sz = emu.regs().r8 as usize;
     let result = ntdll::memcpy(emu, dst, src, sz);
-    if result == false {
+    if !result {
         panic!("RtlCopyMemory failed to copy");
     }
     log_red!(

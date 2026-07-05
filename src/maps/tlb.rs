@@ -50,6 +50,12 @@ pub struct TLB {
     entry: [TLBEntry; TLB_SIZE],
 }
 
+impl Default for TLB {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl TLB {
     pub fn new() -> Self {
         Self {

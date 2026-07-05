@@ -145,15 +145,15 @@ impl Emu {
             if !self.ld_bootstrap {
                 let symbol = self.resolve_unix_x64_symbol(addr);
                 if symbol == "__libc_start_main" {
-                    let section_name = name;
-                    return self.intercept_unix_x64_api_call(addr, &section_name.to_string());
+                    let section_name = name.to_string();
+                    return self.intercept_unix_x64_api_call(addr, &section_name);
                 }
             }
             self.regs_mut().rip = addr;
             return true;
         } else if self.os.is_linux() || self.os.is_macos() {
-            let section_name = name;
-            return self.intercept_unix_x64_api_call(addr, &section_name.to_string());
+            let section_name = name.to_string();
+            return self.intercept_unix_x64_api_call(addr, &section_name);
         } else {
             if self.cfg.verbose >= 2 && !self.cfg.emulate_winapi {
                 log::trace!("/!\\ changing RIP to {} ", name);
@@ -167,11 +167,10 @@ impl Emu {
             // surface.
             if self.cfg.emulate_winapi {
                 let api_name = winapi64::kernel32::guess_api_name(self, addr);
-                if !api_name.is_empty() {
-                    if self.cfg.verbose >= 1 {
+                if !api_name.is_empty()
+                    && self.cfg.verbose >= 1 {
                         log_red!(self, "emulating {}", api_name);
                     }
-                }
                 self.regs_mut().rip = addr;
                 return true;
             }
@@ -262,11 +261,10 @@ impl Emu {
             // emulate winapi mode
             if self.cfg.emulate_winapi {
                 let api_name = winapi64::kernel32::guess_api_name(self, addr);
-                if !api_name.is_empty() {
-                    if self.cfg.verbose >= 1 {
+                if !api_name.is_empty()
+                    && self.cfg.verbose >= 1 {
                         log_red!(self, "emulating {}", api_name);
                     }
-                }
                 self.regs_aarch64_mut().pc = addr;
                 return true;
             }
@@ -369,11 +367,10 @@ impl Emu {
             // winapi emulation case
             if self.cfg.emulate_winapi {
                 let api_name = winapi32::kernel32::guess_api_name(self, addr as u32);
-                if !api_name.is_empty() {
-                    if self.cfg.verbose >= 1 {
+                if !api_name.is_empty()
+                    && self.cfg.verbose >= 1 {
                         log_red!(self, "emulating {}", api_name);
                     }
-                }
                 self.regs_mut().set_eip(addr);
                 return true;
             }

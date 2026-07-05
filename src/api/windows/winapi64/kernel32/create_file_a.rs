@@ -4,10 +4,10 @@ use crate::emu::object_handle::file_handle::{FILE_SYSTEM, INVALID_HANDLE_VALUE};
 use log::error;
 
 pub fn CreateFileA(emu: &mut emu::Emu) {
-    let lp_file_name = emu.regs().rcx as u64;
+    let lp_file_name = emu.regs().rcx;
     let dw_desired_access = emu.regs().rdx as u32;
     let dw_share_mode = emu.regs().r8 as u32;
-    let lp_security_attributes = emu.regs().r9 as u64;
+    let lp_security_attributes = emu.regs().r9;
     let dw_creation_disposition =
         emu.maps
             .read_qword(emu.regs().rsp + 0x20)

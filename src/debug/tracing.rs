@@ -186,7 +186,7 @@ pub fn trace_instruction(emu: &Emu, instruction_count: u64) {
                     let now = Instant::now();
                     let should_log = LAST_IPS_LOG
                         .with(|l| l.get())
-                        .map_or(true, |last| now.duration_since(last).as_secs() >= 1);
+                        .is_none_or(|last| now.duration_since(last).as_secs() >= 1);
                     if should_log {
                         log::info!(
                             "⚡ IPS: {:.2} ({} instructions in {:.2}s)",

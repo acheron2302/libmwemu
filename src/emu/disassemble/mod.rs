@@ -61,6 +61,12 @@ pub struct InstructionCache<T: Copy + Default> {
     current_decode_idx: usize,
 }
 
+impl<T: Copy + Default> Default for InstructionCache<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<T: Copy + Default> InstructionCache<T> {
     pub fn new() -> Self {
         InstructionCache {

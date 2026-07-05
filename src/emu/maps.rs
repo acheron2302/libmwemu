@@ -117,7 +117,7 @@ impl Emu {
 
             if file.name().ends_with('/') {
                 // Create directory
-                fs::create_dir_all(&outpath)?;
+                fs::create_dir_all(outpath)?;
             } else {
                 // Create parent directories if they don't exist
                 if let Some(p) = outpath.parent() {
@@ -127,7 +127,7 @@ impl Emu {
                 }
 
                 // Extract file
-                let mut outfile = fs::File::create(&outpath)?;
+                let mut outfile = fs::File::create(outpath)?;
                 io::copy(&mut file, &mut outfile)?;
             }
         }
@@ -139,10 +139,7 @@ impl Emu {
     /// Get the base address of the code, if code map doesn't exist yet will return None.
     pub fn get_base_addr(&self) -> Option<u64> {
         //TODO: fix this, now there is no code map.
-        let map = match self.maps.get_map_by_name("code") {
-            Some(m) => m,
-            None => return None,
-        };
+        let map = self.maps.get_map_by_name("code")?;
 
         Some(map.get_base())
     }

@@ -14,7 +14,7 @@ pub fn execute(emu: &mut Emu, ins: &Instruction, _instruction_sz: usize, _rep_st
     let shift = cnt & (sz - 1);
     let result = match sz {
         64 => src >> shift,
-        32 => ((src as u32) >> shift) as u32 as u64,
+        32 => ((src as u32) >> shift) as u64,
         _ => return false,
     };
     emu.set_operand_value(ins, 0, result);

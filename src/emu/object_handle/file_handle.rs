@@ -100,7 +100,7 @@ pub fn init_file_system<P: AsRef<Path>>(file_root: Option<P>) -> io::Result<()> 
             // Relative to executable directory
             let exe_dir = env::current_exe()?
                 .parent()
-                .ok_or_else(|| io::Error::new(ErrorKind::Other, "Failed to get exe directory"))?
+                .ok_or_else(|| io::Error::other("Failed to get exe directory"))?
                 .to_path_buf();
             exe_dir.join(path)
         }
@@ -108,7 +108,7 @@ pub fn init_file_system<P: AsRef<Path>>(file_root: Option<P>) -> io::Result<()> 
         // Default: "file_root" folder next to executable
         let exe_dir = env::current_exe()?
             .parent()
-            .ok_or_else(|| io::Error::new(ErrorKind::Other, "Failed to get exe directory"))?
+            .ok_or_else(|| io::Error::other("Failed to get exe directory"))?
             .to_path_buf();
         exe_dir.join("file_root")
     };
@@ -129,7 +129,7 @@ pub fn init_file_system<P: AsRef<Path>>(file_root: Option<P>) -> io::Result<()> 
 
     FILE_SYSTEM
         .set(fs)
-        .map_err(|_| io::Error::new(ErrorKind::Other, "FileSystem already initialized"))
+        .map_err(|_| io::Error::other("FileSystem already initialized"))
 }
 
 // Represents the state and metadata associated with a Windows file handle
@@ -242,11 +242,7 @@ impl FileHandle {
             let bytes_read = f.read(buffer)?;
             self.file_position += bytes_read as u64;
             // Update EOF flag if necessary
-            if self.file_position >= self.file_size && bytes_read == 0 {
-                self.is_eof = true;
-            } else {
-                self.is_eof = false;
-            }
+            self.is_eof = self.file_position >= self.file_size && bytes_read == 0;
             Ok(bytes_read)
         } else {
             Err(io::Error::new(
@@ -566,7 +562,7 @@ impl FileSystem {
         if abs_path.starts_with(&abs_base) {
             let remainder = abs_path
                 .strip_prefix(&abs_base)
-                .map_err(|_| io::Error::new(ErrorKind::Other, "Failed to strip prefix"))
+                .map_err(|_| io::Error::other("Failed to strip prefix"))
                 .unwrap();
             Some(PathBuf::from(remainder))
         } else {
@@ -579,6 +575,12 @@ impl FileSystem {
 pub struct FileSystemBuilder {
     root: Option<PathBuf>,
     initial_mappings: Vec<(WindowsPath, PathBuf)>,
+}
+
+impl Default for FileSystemBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl FileSystemBuilder {
@@ -610,7 +612,7 @@ impl FileSystemBuilder {
             println!("Failed to initialize filesystem with err: {}", err);
             println!(
                 "Please check the file location: {}",
-                &root.to_str().unwrap()
+                root.to_str().unwrap()
             );
             return Err(err);
         }

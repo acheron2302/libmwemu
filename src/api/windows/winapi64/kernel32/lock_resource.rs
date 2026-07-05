@@ -6,7 +6,7 @@ pub fn LockResource(emu: &mut emu::Emu) {
 
     if helper::handler_exist(hResData) {
         let uri = helper::handler_get_uri(hResData);
-        let ptr = uri.split("_").next().unwrap().parse::<u64>().unwrap() + emu.base as u64;
+        let ptr = uri.split("_").next().unwrap().parse::<u64>().unwrap() + emu.base;
 
         log_red!(
             emu,

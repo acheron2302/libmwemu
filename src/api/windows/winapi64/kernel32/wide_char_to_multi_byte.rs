@@ -2,7 +2,7 @@ use crate::winapi::winapi64::kernel32::{LAST_ERROR, clear_last_error};
 use crate::{emu, windows::constants};
 
 pub fn WideCharToMultiByte(emu: &mut emu::Emu) {
-    let code_page = emu.regs().rcx as u64;
+    let code_page = emu.regs().rcx;
     let dw_flags = emu.regs().rdx as usize;
     let lp_wide_char_str = emu.regs().r8 as usize;
     let cch_wide_char = emu.regs().r9 as isize;
@@ -48,8 +48,8 @@ pub fn WideCharToMultiByte(emu: &mut emu::Emu) {
     }
 
     // 2. Handle special code pages
-    if code_page == constants::CP_UTF7 || code_page == constants::CP_UTF8 {
-        if lp_default_char != 0 || lp_used_default_char != 0 {
+    if (code_page == constants::CP_UTF7 || code_page == constants::CP_UTF8)
+        && (lp_default_char != 0 || lp_used_default_char != 0) {
             // Set last error to ERROR_INVALID_PARAMETER
             log::warn!("{} kernel32!WideCharToMultiByte invalid parameter", emu.pos);
             let mut err = LAST_ERROR.lock().unwrap();
@@ -57,7 +57,6 @@ pub fn WideCharToMultiByte(emu: &mut emu::Emu) {
             emu.regs_mut().rax = 0;
             return;
         }
-    }
 
     // 3. Read input string and get its length
     let s = emu.maps.read_wide_string(lp_wide_char_str as u64);

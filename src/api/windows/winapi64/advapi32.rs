@@ -17,10 +17,10 @@ pub fn gateway(addr: u64, emu: &mut emu::Emu) -> String {
         "GetUserNameW" => GetUserNameW(emu),
 
         _ => {
-            if emu.cfg.skip_unimplemented == false {
+            if !emu.cfg.skip_unimplemented {
                 if emu.cfg.dump_on_exit && emu.cfg.dump_filename.is_some() {
                     serialization::Serialization::dump(
-                        &emu,
+                        emu,
                         emu.cfg.dump_filename.as_ref().unwrap(),
                     );
                 }

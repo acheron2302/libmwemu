@@ -176,7 +176,7 @@ fn winbindex_key(basename: &str, build: &str, machine_type: u64) -> Result<Strin
                 .and_then(|v| v.rsplit('.').next())
                 .and_then(|s| s.parse::<u64>().ok())
                 .unwrap_or(0);
-            if fallback.map_or(true, |(u, _, _)| ubr > u) {
+            if fallback.is_none_or(|(u, _, _)| ubr > u) {
                 fallback = Some((ubr, ts, vsize));
             }
         }

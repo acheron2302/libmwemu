@@ -32,7 +32,7 @@ pub fn GetLocaleInfoA(emu: &mut emu::Emu) {
     }
 
     // Write result directly to provided buffer
-    emu.maps.write_string(lp_lc_data as u64, &result);
+    emu.maps.write_string(lp_lc_data as u64, result);
     emu.regs_mut().rax = result.len() as u64; // Return length without null terminator
     clear_last_error(emu);
 }

@@ -146,6 +146,12 @@ pub struct RegsAarch64 {
     pub v: [u128; 32],
 }
 
+impl Default for RegsAarch64 {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl RegsAarch64 {
     pub fn new() -> Self {
         Self {

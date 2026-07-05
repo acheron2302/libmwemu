@@ -112,7 +112,7 @@ pub fn resolve_mem_addr(emu: &Emu, op: &Operand) -> (u64, Option<(usize, u64)>) 
             let base = regs.get_x_or_sp(*base_reg as usize);
             let mut index = regs.get_x(*index_reg as usize);
             if !is_64(index_size) {
-                index = index & 0xffffffff;
+                index &= 0xffffffff;
             }
             index = apply_shift(index, *shift_style, *shift_amt as u32);
             (base.wrapping_add(index), None)

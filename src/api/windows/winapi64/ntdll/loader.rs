@@ -42,7 +42,7 @@ fn LdrGetDllHandleEx(emu: &mut emu::Emu) {
     log_red!(emu, "ntdll!LdrGetDllHandleEx {}", dll_name);
 
     let result = emu.maps.memcpy(path_ptr, dll_name_ptr, dll_name.len());
-    if result == false {
+    if !result {
         panic!("LdrGetDllHandleEx failed to copy");
     }
 

@@ -131,7 +131,6 @@ fn dispatch_legacy_syscall64(emu: &mut emu::Emu) {
 
         constants::NR64_EXIT | constants::NR64_EXIT_GROUP => {
             super::proc::handle_syscall64_exit(emu);
-            return;
         }
 
         constants::NR64_FORK => super::proc::handle_syscall64_fork(emu),

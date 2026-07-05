@@ -17,7 +17,9 @@ pub struct SystemTime {
 impl SystemTime {
     pub fn now() -> SystemTime {
         let now = Utc::now();
-        let systime = SystemTime {
+        
+
+        SystemTime {
             year: now.year() as u16,
             month: now.month() as u16,
             day_of_week: now.weekday() as u16,
@@ -26,9 +28,7 @@ impl SystemTime {
             minute: now.minute() as u16,
             second: now.second() as u16,
             millis: now.timestamp_millis() as u16,
-        };
-
-        systime
+        }
     }
 
     pub fn save(&self, addr: u64, maps: &mut Maps) {

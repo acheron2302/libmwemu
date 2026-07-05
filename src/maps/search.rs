@@ -189,7 +189,7 @@ impl Maps {
                 continue;
             }
 
-            let results = match self.search_string(&kw, &mem.get_name()) {
+            let results = match self.search_string(&kw, mem.get_name()) {
                 Some(v) => v,
                 None => {
                     continue;

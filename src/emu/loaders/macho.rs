@@ -99,10 +99,8 @@ impl Emu {
             let mem = self
                 .maps
                 .create_map(&map_name, seg_addr, seg.vmsize, perm)
-                .expect(&format!(
-                    "cannot create map for dylib segment '{}'",
-                    map_name
-                ));
+                .unwrap_or_else(|_| panic!("cannot create map for dylib segment '{}'",
+                    map_name));
 
             if !seg.data.is_empty() {
                 mem.force_write_bytes(seg_addr, &seg.data);

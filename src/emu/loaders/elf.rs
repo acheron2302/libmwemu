@@ -254,7 +254,7 @@ impl Emu {
         let mut cache: HashMap<u64, u64> = HashMap::new();
 
         // Save emulator state so the load phase stays transparent.
-        let saved_regs = self.regs().clone();
+        let saved_regs = *self.regs();
         let saved_pos = self.pos;
 
         for (patch_addr, resolver) in irelative {

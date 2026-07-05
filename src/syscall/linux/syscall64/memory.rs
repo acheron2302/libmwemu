@@ -33,7 +33,7 @@ pub(super) fn handle_syscall64_brk(emu: &mut emu::Emu) {
                     .create_map("heap", HEAP_START, HEAP_MAX, Permission::READ_WRITE);
             }
         }
-        if requested >= HEAP_START && requested <= HEAP_START + HEAP_MAX {
+        if (HEAP_START..=HEAP_START + HEAP_MAX).contains(&requested) {
             emu.heap_addr = requested; // move the program break
         }
         emu.regs_mut().rax = emu.heap_addr;

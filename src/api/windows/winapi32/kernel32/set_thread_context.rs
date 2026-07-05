@@ -19,7 +19,7 @@ pub fn SetThreadContext(emu: &mut emu::Emu) {
     let opt = con.cmd();
 
     if opt == "y" || opt == "yes" {
-        let mut ctx = context32::Context32::new(&emu.regs());
+        let mut ctx = context32::Context32::new(emu.regs());
         ctx.load(ctx_ptr, &mut emu.maps);
         ctx.sync(emu.regs_mut());
     }

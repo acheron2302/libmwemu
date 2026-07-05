@@ -15,7 +15,7 @@ pub fn execute(emu: &mut Emu, ins: &Instruction, _instruction_sz: usize, _rep_st
         Some(v) => v,
         None => return false,
     };
-    let imm = ins.immediate8() as u8;
+    let imm = ins.immediate8();
 
     let is_word = imm & 1 != 0;
     let is_signed = imm & 2 != 0;

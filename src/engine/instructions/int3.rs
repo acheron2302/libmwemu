@@ -14,5 +14,5 @@ pub fn execute(emu: &mut Emu, ins: &Instruction, instruction_sz: usize, _rep_ste
     if emu.seh() == 0 && emu.veh() == 0 && emu.uef() == 0 {
         emu.stop();
     }
-    return true;
+    true
 }

@@ -130,7 +130,7 @@ pub fn ntdll_heap_list_walk_fixup(emu: &mut Emu, ins: &Instruction, rip: u64) {
     }
 
     let rsi = emu.regs().rsi;
-    if rsi < ALLOC64_MIN || rsi >= ALLOC64_MAX {
+    if !(ALLOC64_MIN..ALLOC64_MAX).contains(&rsi) {
         return;
     }
     if !emu.maps.is_mapped(rsi) || !emu.maps.is_mapped(rsi + 8) {
@@ -287,15 +287,14 @@ pub fn nt_query_virtual_memory(emu: &mut Emu) {
 
     mem_info.save(memory_information, &mut emu.maps);
 
-    if return_length_ptr != 0 {
-        if !emu
+    if return_length_ptr != 0
+        && !emu
             .maps
             .write_qword(return_length_ptr, MemoryBasicInformation64::SIZE)
         {
             emu.regs_mut().rax = STATUS_INVALID_PARAMETER;
             return;
         }
-    }
 
     emu.regs_mut().rax = STATUS_SUCCESS;
 }
@@ -443,7 +442,7 @@ fn alloc_64k_aligned(emu: &mut Emu, size: u64) -> Option<u64> {
     let aligned = (probe + GRAN - 1) & !(GRAN - 1);
     // Validate the aligned range is still free (the probe gave us [probe, probe+size+GRAN-1)
     // — sliding to `aligned` keeps us inside that window).
-    if aligned + size <= probe + size + GRAN - 1 && !emu.maps.overlaps(aligned, size) {
+    if aligned + size < probe + size + GRAN && !emu.maps.overlaps(aligned, size) {
         Some(aligned)
     } else {
         // Fallback: scan for a free 64K-aligned region directly.
@@ -691,7 +690,7 @@ pub fn nt_free_virtual_memory(emu: &mut Emu) {
             // ntdll may call MEM_RELEASE on a range already torn down by a prior successful free or
             // on an address our single-map model treats as unmapped; real kernel often accepts the
             // no-op.
-            if emu.cfg.emulate_winapi && base >= ALLOC64_MIN && base < ALLOC64_MAX {
+            if emu.cfg.emulate_winapi && (ALLOC64_MIN..ALLOC64_MAX).contains(&base) {
                 // Windows writes back the page-aligned freed base (not zero) so callers can
                 // inspect what was released. Do not zero *BaseAddress.
                 emu.regs_mut().rax = STATUS_SUCCESS;
@@ -790,7 +789,7 @@ pub fn nt_protect_virtual_memory(emu: &mut Emu) {
     };
 
     if old_protect_ptr != 0 {
-        let _ = emu.maps.write_dword(old_protect_ptr as u64, old_protect);
+        let _ = emu.maps.write_dword(old_protect_ptr, old_protect);
     }
 
     if let Some(mem) = emu.maps.get_mem_by_addr_mut(base) {
@@ -920,7 +919,7 @@ pub fn nt_unmap_view_of_section(emu: &mut Emu) {
     let map_name = emu
         .maps
         .get_addr_name(base)
-        .unwrap_or_else(|| "<unmapped>")
+        .unwrap_or("<unmapped>")
         .to_string();
     log_orange!(
         emu,
@@ -1158,30 +1157,10 @@ pub fn nt_open_section(emu: &mut Emu) {
     // here causes ntdll to fall through to disk lookup, which also fails, and
     // terminate the process with STATUS_DLL_NOT_FOUND.
     //
-    // First few of these are API-set entries that redirect to kernelbase in
-    // real Windows — fall back to a kernelbase section handle so the loader
-    // accepts the dependency. After a small budget, switch to NOT_FOUND: an
-    // unbounded fake fallback causes ntdll to re-init those phantom modules
-    // (TLS callbacks, DllMain) in a tight loop and exhaust the stack.
+    // The former kernelbase fallback is disabled: an unbounded fake fallback
+    // causes ntdll to re-init phantom modules (TLS callbacks, DllMain) in a
+    // tight loop and exhaust the stack.
     if is_known_dll_dir && dll_name.is_none() {
-        const FALLBACK_BUDGET: usize = 0;
-        if emu
-            .section_handles
-            .values()
-            .filter(|n| *n == "kernelbase.dll")
-            .count()
-            < FALLBACK_BUDGET
-        {
-            let h = crate::syscall::windows::syscall64::sync::next_handle();
-            let _ = emu.maps.write_qword(handle_out, h);
-            log::trace!(
-                "NtOpenSection: empty-name KnownDll → handle 0x{:x} -> kernelbase.dll (api-set fallback)",
-                h
-            );
-            emu.section_handles.insert(h, "kernelbase.dll".to_string());
-            emu.regs_mut().rax = STATUS_SUCCESS;
-            return;
-        }
         emu.regs_mut().rax = STATUS_OBJECT_NAME_NOT_FOUND;
         return;
     }

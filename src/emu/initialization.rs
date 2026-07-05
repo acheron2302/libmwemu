@@ -402,7 +402,7 @@ impl Emu {
         }
 
         // loading banzai on 32bits
-        if self.cfg.arch.is_64bits() == false {
+        if !self.cfg.arch.is_64bits() {
             let mut rdr = ReaderBuilder::new()
                 .from_path(format!("{}/banzai.csv", self.cfg.maps_folder))
                 .expect("banzai.csv not found on maps folder, please download last mwemu maps");
@@ -451,8 +451,8 @@ impl Emu {
         self.maps.is_64bits = self.cfg.arch.is_64bits();
 
         // Ensure thread context matches the target architecture
-        if self.cfg.arch.is_aarch64() {
-            if matches!(
+        if self.cfg.arch.is_aarch64()
+            && matches!(
                 self.threads[self.current_thread_id].arch,
                 crate::threading::context::ArchThreadState::X86 { .. }
             ) {
@@ -460,7 +460,6 @@ impl Emu {
                 self.threads[self.current_thread_id] =
                     crate::threading::context::ThreadContext::new(id, self.cfg.arch);
             }
-        }
 
         // Ensure arch_state matches the target architecture
         if self.cfg.arch.is_aarch64() && matches!(self.arch_state, super::ArchState::X86 { .. }) {
@@ -1196,7 +1195,7 @@ impl Emu {
         for dll in &base {
             self.ensure_maps_dll(dll); // fetch from the symbol server if missing
             let filepath = self.cfg.get_maps_folder(dll);
-            log::debug!("mapping base lib64: {}", &filepath);
+            log::debug!("mapping base lib64: {}", filepath);
             assert!(
                 std::path::Path::new(&filepath).exists(),
                 "required base DLL not found: {} (maps_folder={})",
@@ -1231,7 +1230,7 @@ impl Emu {
         for dll in dependencies {
             self.ensure_maps_dll(&dll); // fetch from the symbol server if missing
             let filepath = self.cfg.get_maps_folder(&dll);
-            log::debug!("mapping depenency {}", &filepath);
+            log::debug!("mapping depenency {}", filepath);
             assert!(
                 std::path::Path::new(&filepath).exists(),
                 "required dependency DLL not found: {} (maps_folder={})",
@@ -1250,13 +1249,13 @@ impl Emu {
 
         // Stage 3: dynamic linking base + deps
         for dll in &metadata {
-            log::debug!("dynamic linking {}", &dll.name);
+            log::debug!("dynamic linking {}", dll.name);
             peb64::dynamic_link_module(dll.base, dll.pe64.get_pe_off(), &dll.name, self);
         }
 
         // Stage 3: IAT binding for base + deps (relocs already applied in `map_dll_pe64`).
         for dll in metadata.iter_mut() {
-            log::debug!("iat binding {}", &dll.name);
+            log::debug!("iat binding {}", dll.name);
             dll.pe64.iat_binding(&dll.raw, self, dll.base);
             dll.pe64.delay_load_binding(&dll.raw, self, dll.base);
         }

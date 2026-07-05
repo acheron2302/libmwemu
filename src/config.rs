@@ -203,7 +203,7 @@ impl Config {
         if !path.ends_with('/') {
             path.push('/');
         }
-        path.push_str(&filename);
+        path.push_str(filename);
         path
     }
 }

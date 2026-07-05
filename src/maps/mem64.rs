@@ -272,11 +272,7 @@ impl Mem64 {
 
     #[inline]
     pub fn inside(&self, addr: u64) -> bool {
-        if addr >= self.base_addr && addr < self.bottom_addr {
-            true
-        } else {
-            false
-        }
+        addr >= self.base_addr && addr < self.bottom_addr
     }
 
     #[inline(always)]
@@ -714,7 +710,7 @@ impl Mem64 {
             wide_string.push(0);
         }
         let wide_string_byte_slice: &[u8] = cast_slice(&wide_string);
-        self.write_bytes(addr, &wide_string_byte_slice);
+        self.write_bytes(addr, wide_string_byte_slice);
 
         if cfg!(feature = "log_mem_write") {
             emu_context::with_current_emu(|emu| {
@@ -894,10 +890,10 @@ impl Mem64 {
 
         match String::from_utf16(&s) {
             Ok(s) => {
-                return s;
+                s
             }
             Err(_) => {
-                return "".to_string();
+                "".to_string()
             }
         }
     }
@@ -1056,10 +1052,7 @@ impl Mem64 {
 
         let blob = self.mem.get(0..).unwrap();
 
-        let res = match f.write_all(blob) {
-            Ok(_) => true,
-            Err(_) => false,
-        };
+        let res = f.write_all(blob).is_ok();
 
         f.sync_all().unwrap();
 

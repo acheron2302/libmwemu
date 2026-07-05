@@ -81,7 +81,7 @@ pub fn enter32(emu: &mut emu::Emu, ex_type: types::ExceptionType, handler_kind: 
     emu.maps
         .write_dword(emu.eh_ctx(), types::exception_type_code(ex_type)); // STATUS_BREAKPOINT
 
-    let ctx = Context32::new(&emu.regs());
+    let ctx = Context32::new(emu.regs());
     ctx.save(emu.eh_ctx() as u32, &mut emu.maps);
 }
 
@@ -91,7 +91,7 @@ pub fn exit32(emu: &mut emu::Emu) {
     let ex_code = emu.maps.read_dword(ctx_ptr).unwrap_or(0);
     let handler_kind = emu.maps.read_dword(ctx_ptr.saturating_sub(8)).unwrap_or(0);
 
-    let mut ctx = Context32::new(&emu.regs());
+    let mut ctx = Context32::new(emu.regs());
     ctx.load(emu.eh_ctx() as u32, &mut emu.maps);
     ctx.sync(emu.regs_mut());
     emu.set_eh_ctx(0);
@@ -127,7 +127,7 @@ pub fn enter64(emu: &mut emu::Emu, ex_type: types::ExceptionType, handler_kind: 
     // so exit64 can retrieve it from `eh_ctx()` (offset +0).
     emu.maps
         .write_dword(emu.eh_ctx(), types::exception_type_code(ex_type));
-    let ctx = Context64::new(&emu.regs());
+    let ctx = Context64::new(emu.regs());
     ctx.save(emu.eh_ctx(), &mut emu.maps);
 }
 
@@ -137,7 +137,7 @@ pub fn exit64(emu: &mut emu::Emu) {
     let ex_code = emu.maps.read_dword(ctx_ptr).unwrap_or(0);
     let handler_kind = emu.maps.read_dword(ctx_ptr.saturating_sub(16)).unwrap_or(0);
 
-    let mut ctx = Context64::new(&emu.regs());
+    let mut ctx = Context64::new(emu.regs());
     ctx.load(emu.eh_ctx(), &mut emu.maps);
     ctx.sync(emu.regs_mut());
     emu.set_eh_ctx(0);
