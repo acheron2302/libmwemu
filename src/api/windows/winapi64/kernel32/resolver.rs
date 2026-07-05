@@ -82,7 +82,9 @@ fn resolve_in_module_exports_depth(
     flink.load(emu);
     let first_ptr = flink.get_ptr();
     loop {
-        if flink.export_table_rva > 0 && kernel32_common::module_name_matches(&flink.mod_name, &want) {
+        if flink.export_table_rva > 0
+            && kernel32_common::module_name_matches(&flink.mod_name, &want)
+        {
             for i in 0..flink.num_of_funcs {
                 if flink.pe_hdr == 0 {
                     continue;

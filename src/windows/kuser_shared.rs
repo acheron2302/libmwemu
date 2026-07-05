@@ -377,26 +377,33 @@ mod tests {
         let base = init_kuser_shared_data(&mut emu);
         assert_eq!(base, USER_KUSER_SHARED_ADDR);
 
-        let rd = |o: usize| -> u64 {
-            emu.maps.read_qword(base + o as u64).unwrap()
-        };
-        let rd32 = |o: usize| -> u32 {
-            emu.maps.read_dword(base + o as u64).unwrap()
-        };
+        let rd = |o: usize| -> u64 { emu.maps.read_qword(base + o as u64).unwrap() };
+        let rd32 = |o: usize| -> u32 { emu.maps.read_dword(base + o as u64).unwrap() };
 
-        assert_eq!(rd32(offset_of!(KuserSharedData, TickCountMultiplier)), 0x0fa00000);
-        assert_eq!(rd32(offset_of!(KuserSharedData, InterruptTime.LowPart)), 0x17bd9547);
+        assert_eq!(
+            rd32(offset_of!(KuserSharedData, TickCountMultiplier)),
+            0x0fa00000
+        );
+        assert_eq!(
+            rd32(offset_of!(KuserSharedData, InterruptTime.LowPart)),
+            0x17bd9547
+        );
         assert_eq!(rd32(offset_of!(KuserSharedData, NtBuildNumber)), 0x6c51);
         assert_eq!(rd32(offset_of!(KuserSharedData, NtProductType)), 1); // WinNt
         assert_eq!(rd32(offset_of!(KuserSharedData, NtMajorVersion)), 0xa);
         assert_eq!(rd32(offset_of!(KuserSharedData, Cookie)), 0x1c3471da);
         assert_eq!(
-            emu.maps.read_byte(base + offset_of!(KuserSharedData, MitigationPolicies) as u64).unwrap(),
+            emu.maps
+                .read_byte(base + offset_of!(KuserSharedData, MitigationPolicies) as u64)
+                .unwrap(),
             0x0a
         );
         assert_eq!(rd(offset_of!(KuserSharedData, TickCount)), 0x1f7f05);
         assert_eq!(rd(offset_of!(KuserSharedData, QpcBias)), 0x000000159530c4af);
-        assert_eq!(rd(offset_of!(KuserSharedData, XState.EnabledFeatures)), 0x1f);
+        assert_eq!(
+            rd(offset_of!(KuserSharedData, XState.EnabledFeatures)),
+            0x1f
+        );
         // RtlAllocateHeap probe byte.
         assert_eq!(emu.maps.read_byte(base + 0x380).unwrap(), 1);
         // A field left at zero stays zero.

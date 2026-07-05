@@ -7,10 +7,10 @@ use crate::windows::constants;
 use super::virtual_alloc_common::{fail, fail_oom};
 
 pub fn VirtualAllocExNuma(emu: &mut emu::Emu) {
-    let proc_hndl = emu
-        .maps
-        .read_dword(emu.regs().get_esp())
-        .expect("kernel32!VirtualAllocExNuma cannot read the proc handle") as u64;
+    let proc_hndl =
+        emu.maps
+            .read_dword(emu.regs().get_esp())
+            .expect("kernel32!VirtualAllocExNuma cannot read the proc handle") as u64;
     let addr = emu
         .maps
         .read_dword(emu.regs().get_esp() + 4)
@@ -50,7 +50,12 @@ pub fn VirtualAllocExNuma(emu: &mut emu::Emu) {
     }
 
     if !mem_reserve && !mem_commit {
-        fail(emu, "VirtualAllocExNuma", &ctx, "unsupported allocation type");
+        fail(
+            emu,
+            "VirtualAllocExNuma",
+            &ctx,
+            "unsupported allocation type",
+        );
         for _ in 0..6 {
             emu.stack_pop32(false);
         }

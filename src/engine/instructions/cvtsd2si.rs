@@ -5,7 +5,10 @@ use iced_x86::Instruction;
 // CVTSD2SI r32/r64, xmm/m64 : convert a scalar double to a signed integer,
 // rounding to nearest (ties to even), which is the default rounding mode.
 pub fn execute(emu: &mut Emu, ins: &Instruction, _instruction_sz: usize, _rep_step: bool) -> bool {
-    emu.show_instruction(color!("Cyan"), &crate::emu::decoded_instruction::DecodedInstruction::X86(*ins));
+    emu.show_instruction(
+        color!("Cyan"),
+        &crate::emu::decoded_instruction::DecodedInstruction::X86(*ins),
+    );
 
     let dst_sz = emu.get_operand_sz(ins, 0);
     let src = match emu.get_operand_xmm_value_128(ins, 1, true) {

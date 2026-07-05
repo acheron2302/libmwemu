@@ -26,7 +26,12 @@ pub(crate) fn resolve_maps_dll(emu: &Emu, basename: &str) -> Option<std::path::P
         if basename.ends_with(".dll") {
             let cache = std::path::Path::new(&emu.cfg.maps_folder);
             // syscall64 is the x64 Windows path.
-            match crate::emu::winver::ensure_dll(cache, &build, basename, crate::emu::winver::MACHINE_AMD64) {
+            match crate::emu::winver::ensure_dll(
+                cache,
+                &build,
+                basename,
+                crate::emu::winver::MACHINE_AMD64,
+            ) {
                 Ok(path) => return Some(path),
                 Err(e) => log::trace!("--winver: {} not fetched: {}", basename, e),
             }
@@ -101,9 +106,15 @@ pub fn build_syscall_translation_table(emu: &mut Emu) {
         ("NtCreateFile", WIN64_NTCREATEFILE),
         ("NtDeviceIoControlFile", WIN64_NTDEVICEIOCONTROLFILE),
         ("NtCreateIoCompletion", WIN64_NTCREATEIOCOMPLETION),
-        ("NtCreateWaitCompletionPacket", WIN64_NTCREATEWAITCOMPLETIONPACKET),
+        (
+            "NtCreateWaitCompletionPacket",
+            WIN64_NTCREATEWAITCOMPLETIONPACKET,
+        ),
         ("NtCreateWorkerFactory", WIN64_NTCREATEWORKERFACTORY),
-        ("NtSetInformationWorkerFactory", WIN64_NTSETINFORMATIONWORKERFACTORY),
+        (
+            "NtSetInformationWorkerFactory",
+            WIN64_NTSETINFORMATIONWORKERFACTORY,
+        ),
         ("NtShutdownWorkerFactory", WIN64_NTSHUTDOWNWORKERFACTORY),
         ("NtQueryWnfStateData", WIN64_NTQUERYWNFSTATEDATA),
         ("NtOpenDirectoryObject", WIN64_NTOPENDIRECTORYOBJECT),
@@ -403,13 +414,17 @@ pub fn gateway(emu: &mut Emu) {
                 let req = emu.maps.read_qword(client_view_ptr + 0x18).unwrap_or(0);
                 // Clamp to a sane window; the client only needs a scratch heap
                 // for CSR messages it will never actually send here.
-                let size = if req == 0 || req > 0x0010_0000 { 0x0001_0000 } else { req };
+                let size = if req == 0 || req > 0x0010_0000 {
+                    0x0001_0000
+                } else {
+                    req
+                };
                 let base = emu.maps.lib64_alloc(size).unwrap_or(0);
                 if base != 0 {
                     let perm = crate::maps::mem64::Permission::from_flags(true, true, false);
-                    let _ = emu
-                        .maps
-                        .create_map(&format!("csr_port_view_{:x}", h), base, size, perm);
+                    let _ =
+                        emu.maps
+                            .create_map(&format!("csr_port_view_{:x}", h), base, size, perm);
                     // ViewRemoteBase == ViewBase → remote delta 0, which is fine
                     // in our single address space (no separate CSR server view).
                     let _ = emu.maps.write_qword(client_view_ptr + 0x20, base);
@@ -504,7 +519,9 @@ pub fn gateway(emu: &mut Emu) {
                     log_orange!(
                         emu,
                         "syscall 0x{:x}: NtQuerySystemInformationEx SystemLogicalProcessorAndGroupInformation (need 0x{:x}, got 0x{:x}) → STATUS_INFO_LENGTH_MISMATCH",
-                        nr, NEED, sysinfo_len,
+                        nr,
+                        NEED,
+                        sysinfo_len,
                     );
                     emu.regs_mut().rax = STATUS_INFO_LENGTH_MISMATCH;
                 } else {

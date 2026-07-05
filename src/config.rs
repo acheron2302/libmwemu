@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::arch::Arch;
-use crate::{windows::constants, debug::definitions::Definition};
+use crate::{debug::definitions::Definition, windows::constants};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -20,26 +20,26 @@ pub struct Config {
     pub winver: Option<String>, // --winver: resolved Windows build; system DLLs are fetched on demand from the symbol server
 
     // --- Heap behavior ---
-    pub max_alloc_size: u64,      // allocation cap (default 16MB), larger are truncated
+    pub max_alloc_size: u64, // allocation cap (default 16MB), larger are truncated
     pub heap_alloc_min_size: u64, // minimum padding for all heap allocations
-    pub heap_free_soft: bool,     // mark memory as freed but don't deallocate
+    pub heap_free_soft: bool, // mark memory as freed but don't deallocate
 
     // --- Tracing ---
-    pub trace_mem: bool,               // show memory operations in every step
-    pub trace_calls: bool,             // trace every call
-    pub trace_regs: bool,              // show all regs in every step
-    pub trace_reg: bool,               // show value and content of a reg in every step
+    pub trace_mem: bool,   // show memory operations in every step
+    pub trace_calls: bool, // trace every call
+    pub trace_regs: bool,  // show all regs in every step
+    pub trace_reg: bool,   // show value and content of a reg in every step
     pub trace_string: bool,
     pub trace_flags: bool,
     pub trace_filename: Option<String>,
     pub trace_start: u64,
-    pub reg_names: Vec<String>,        // which reg to trace
+    pub reg_names: Vec<String>, // which reg to trace
     pub stack_trace: bool,
 
     // --- Verbosity & output ---
-    pub verbose: u32,       // 0 = api only, 1 = api + messages, 2 = asm code
+    pub verbose: u32, // 0 = api only, 1 = api + messages, 2 = asm code
     pub verbose_at: Option<u64>,
-    pub nocolors: bool,     // disable colors for file redirection
+    pub nocolors: bool, // disable colors for file redirection
 
     // --- Console / interactive debugger ---
     // Three trigger mechanisms: by instruction count, by address, or always-on
@@ -68,22 +68,22 @@ pub struct Config {
     pub enable_threading: bool,
 
     // --- Memory inspection ---
-    pub inspect: bool,         // enable memory watch during execution
-    pub inspect_seq: String,   // operand to watch, e.g. "dword ptr [ebp + 0x24]"
+    pub inspect: bool,       // enable memory watch during execution
+    pub inspect_seq: String, // operand to watch, e.g. "dword ptr [ebp + 0x24]"
 
     // --- Network emulation ---
-    pub endpoint: bool,        // enable network endpoint emulation (sockets, HTTP)
+    pub endpoint: bool, // enable network endpoint emulation (sockets, HTTP)
 
     // --- API emulation helpers ---
-    pub string_addr: u64,      // buffer address for string-returning API stubs
+    pub string_addr: u64, // buffer address for string-returning API stubs
 
     // --- Analysis ---
-    pub entropy: bool,         // enable entropy measurement (polymorphic code detection)
+    pub entropy: bool, // enable entropy measurement (polymorphic code detection)
     pub definitions: HashMap<u64, Definition>, // address annotations (also duplicated on Emu for serialization)
 
     // --- Verbose range ---
-    pub verbose_start: u64,               // enable verbose when pos >= verbose_start (0 = disabled)
-    pub verbose_end: u64,                 // disable verbose when pos > verbose_end (0 = no end)
+    pub verbose_start: u64, // enable verbose when pos >= verbose_start (0 = disabled)
+    pub verbose_end: u64,   // disable verbose when pos > verbose_end (0 = no end)
     pub verbose_range_saved: Option<u32>, // saved verbose level while inside the range
 
     // --- Dump on exit ---

@@ -1040,11 +1040,7 @@ impl Flags {
         let s_result = if count < 64 {
             s64 >> count
         } else {
-            if s64 < 0 {
-                -1
-            } else {
-                0
-            }
+            if s64 < 0 { -1 } else { 0 }
         };
 
         let result = s_result as u64;
@@ -1086,11 +1082,7 @@ impl Flags {
         let s_result = if count < 32 {
             s32 >> count
         } else {
-            if s32 < 0 {
-                -1
-            } else {
-                0
-            }
+            if s32 < 0 { -1 } else { 0 }
         };
 
         let result = s_result as u32 as u64;
@@ -1132,11 +1124,7 @@ impl Flags {
         let s_result = if count < 16 {
             s16 >> count
         } else {
-            if s16 < 0 {
-                -1
-            } else {
-                0
-            }
+            if s16 < 0 { -1 } else { 0 }
         };
 
         let result = s_result as u16 as u64;
@@ -1181,11 +1169,7 @@ impl Flags {
         } else {
             // - 0x00 if number was positive
             // - 0xFF if it was negative (sign extend)
-            if s8 < 0 {
-                -1
-            } else {
-                0
-            }
+            if s8 < 0 { -1 } else { 0 }
         };
 
         let result = s_result as u8 as u64;
@@ -1836,7 +1820,7 @@ impl Flags {
 
         self.f_cf = bit63 == 1;
         self.f_of = bit63 != bit62; // take this for grant
-                                    // don't calculate the flag zf, sf doesn't got effect
+        // don't calculate the flag zf, sf doesn't got effect
         res
     }
 

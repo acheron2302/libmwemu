@@ -278,7 +278,9 @@ impl Macho64 {
                         .map_err(|e| MwemuError::new(&format!("cannot parse fat arch: {}", e)))?;
                     if arch.cputype == goblin::mach::constants::cputype::CPU_TYPE_ARM64 {
                         return goblin::mach::MachO::parse(&self.bin, arch.offset as usize)
-                            .map_err(|e| MwemuError::new(&format!("cannot parse arm64 slice: {}", e)));
+                            .map_err(|e| {
+                                MwemuError::new(&format!("cannot parse arm64 slice: {}", e))
+                            });
                     }
                 }
                 Err(MwemuError::new("no ARM64 slice found in FAT Mach-O"))
@@ -329,7 +331,9 @@ impl Macho64 {
                 if end > self.bin.len() {
                     log::warn!(
                         "macho64: chained fixups data range [{:#x}..{:#x}] exceeds bin len {:#x}",
-                        base, end, self.bin.len()
+                        base,
+                        end,
+                        self.bin.len()
                     );
                     continue;
                 }

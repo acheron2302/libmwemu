@@ -7,7 +7,10 @@ use iced_x86::Instruction;
 /// "type" only matters to forwarding/decoder, not to the bytes moved), so we
 /// handle both the 128-bit (xmm) and 256-bit (ymm) forms identically.
 pub fn execute(emu: &mut Emu, ins: &Instruction, instruction_sz: usize, _rep_step: bool) -> bool {
-    emu.show_instruction(color!("Green"), &crate::emu::decoded_instruction::DecodedInstruction::X86(*ins));
+    emu.show_instruction(
+        color!("Green"),
+        &crate::emu::decoded_instruction::DecodedInstruction::X86(*ins),
+    );
 
     let sz0 = emu.get_operand_sz(ins, 0);
     let sz1 = emu.get_operand_sz(ins, 1);

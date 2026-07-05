@@ -75,7 +75,13 @@ fn virtual_alloc_zero_size_64() {
     let r = helpers::call_winapi64(
         &mut emu,
         winapi64::kernel32::VirtualAllocEx,
-        &[0xffff_ffff_ffff_ffff, 0, 0, constants::MEM_COMMIT as u64, 0x40],
+        &[
+            0xffff_ffff_ffff_ffff,
+            0,
+            0,
+            constants::MEM_COMMIT as u64,
+            0x40,
+        ],
     );
     assert_eq!(r, 0);
     assert_eq!(
@@ -86,7 +92,14 @@ fn virtual_alloc_zero_size_64() {
     let r = helpers::call_winapi64(
         &mut emu,
         winapi64::kernel32::VirtualAllocExNuma,
-        &[0xffff_ffff_ffff_ffff, 0, 0, constants::MEM_COMMIT as u64, 0x40, 0],
+        &[
+            0xffff_ffff_ffff_ffff,
+            0,
+            0,
+            constants::MEM_COMMIT as u64,
+            0x40,
+            0,
+        ],
     );
     assert_eq!(r, 0);
     assert_eq!(

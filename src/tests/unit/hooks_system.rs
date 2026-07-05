@@ -87,7 +87,11 @@ pub fn test_on_syscall() {
     crate::syscall::windows::syscall64::gateway(&mut emu);
 
     assert_eq!(call_counter.load(SeqCst), 1, "hook should fire once");
-    assert_eq!(seen_nr.load(SeqCst), 0x55, "hook should see the raw syscall nr");
+    assert_eq!(
+        seen_nr.load(SeqCst),
+        0x55,
+        "hook should see the raw syscall nr"
+    );
     assert_eq!(
         emu.regs().rax,
         0x1337,
@@ -106,10 +110,11 @@ pub fn test_on_syscall_proceeds() {
 
     // Returning true lets the default dispatch run, which overwrites rax with
     // an NTSTATUS (failure for an arbitrary/unimplemented number).
-    emu.hooks.on_syscall(move |_emu: &mut Emu, _nr: u64| -> bool {
-        counter.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-        true
-    });
+    emu.hooks
+        .on_syscall(move |_emu: &mut Emu, _nr: u64| -> bool {
+            counter.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            true
+        });
 
     emu.regs_mut().rax = 0x55;
     crate::syscall::windows::syscall64::gateway(&mut emu);
@@ -120,7 +125,10 @@ pub fn test_on_syscall_proceeds() {
         "hook should fire once"
     );
     let rax = emu.regs().rax;
-    assert_ne!(rax, 0x55, "default dispatch should have run and changed rax");
+    assert_ne!(
+        rax, 0x55,
+        "default dispatch should have run and changed rax"
+    );
     assert!(
         rax >= 0xC000_0000,
         "default dispatch should leave a failure NTSTATUS, got 0x{:x}",
@@ -362,16 +370,17 @@ pub fn test_winapi_hook() {
     mem.set_permission(Permission::READ_WRITE);
     emu.maps.write_string(emu.regs().rdx, "inject");
 
-    emu.hooks.on_winapi_call(|emu: &mut Emu, ip: u64, _called_addr: u64| -> bool {
-        println!("WinAPI call at {:x} {_called_addr:x}", ip);
-        // `ip` is the call site inside the test EXE (build-stable). The resolved
-        // target lands inside a system DLL whose exact address depends on the
-        // DLL build/layout, so just require a non-zero resolution rather than a
-        // hardcoded address (which would break under different maps builds).
-        assert_eq!(ip, 0x140001241);
-        assert!(_called_addr != 0, "winapi call target should resolve");
-        true
-    });
+    emu.hooks
+        .on_winapi_call(|emu: &mut Emu, ip: u64, _called_addr: u64| -> bool {
+            println!("WinAPI call at {:x} {_called_addr:x}", ip);
+            // `ip` is the call site inside the test EXE (build-stable). The resolved
+            // target lands inside a system DLL whose exact address depends on the
+            // DLL build/layout, so just require a non-zero resolution rather than a
+            // hardcoded address (which would break under different maps builds).
+            assert_eq!(ip, 0x140001241);
+            assert!(_called_addr != 0, "winapi call target should resolve");
+            true
+        });
 
     // launch the msgbox
     emu.step();

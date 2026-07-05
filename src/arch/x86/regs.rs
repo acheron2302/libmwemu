@@ -970,22 +970,70 @@ impl Regs64 {
         let lo = value as u64;
         let hi = (value >> 64) as u64;
         match reg {
-            Register::XMM0 => { self.ymm0.0[0] = lo; self.ymm0.0[1] = hi; }
-            Register::XMM1 => { self.ymm1.0[0] = lo; self.ymm1.0[1] = hi; }
-            Register::XMM2 => { self.ymm2.0[0] = lo; self.ymm2.0[1] = hi; }
-            Register::XMM3 => { self.ymm3.0[0] = lo; self.ymm3.0[1] = hi; }
-            Register::XMM4 => { self.ymm4.0[0] = lo; self.ymm4.0[1] = hi; }
-            Register::XMM5 => { self.ymm5.0[0] = lo; self.ymm5.0[1] = hi; }
-            Register::XMM6 => { self.ymm6.0[0] = lo; self.ymm6.0[1] = hi; }
-            Register::XMM7 => { self.ymm7.0[0] = lo; self.ymm7.0[1] = hi; }
-            Register::XMM8 => { self.ymm8.0[0] = lo; self.ymm8.0[1] = hi; }
-            Register::XMM9 => { self.ymm9.0[0] = lo; self.ymm9.0[1] = hi; }
-            Register::XMM10 => { self.ymm10.0[0] = lo; self.ymm10.0[1] = hi; }
-            Register::XMM11 => { self.ymm11.0[0] = lo; self.ymm11.0[1] = hi; }
-            Register::XMM12 => { self.ymm12.0[0] = lo; self.ymm12.0[1] = hi; }
-            Register::XMM13 => { self.ymm13.0[0] = lo; self.ymm13.0[1] = hi; }
-            Register::XMM14 => { self.ymm14.0[0] = lo; self.ymm14.0[1] = hi; }
-            Register::XMM15 => { self.ymm15.0[0] = lo; self.ymm15.0[1] = hi; }
+            Register::XMM0 => {
+                self.ymm0.0[0] = lo;
+                self.ymm0.0[1] = hi;
+            }
+            Register::XMM1 => {
+                self.ymm1.0[0] = lo;
+                self.ymm1.0[1] = hi;
+            }
+            Register::XMM2 => {
+                self.ymm2.0[0] = lo;
+                self.ymm2.0[1] = hi;
+            }
+            Register::XMM3 => {
+                self.ymm3.0[0] = lo;
+                self.ymm3.0[1] = hi;
+            }
+            Register::XMM4 => {
+                self.ymm4.0[0] = lo;
+                self.ymm4.0[1] = hi;
+            }
+            Register::XMM5 => {
+                self.ymm5.0[0] = lo;
+                self.ymm5.0[1] = hi;
+            }
+            Register::XMM6 => {
+                self.ymm6.0[0] = lo;
+                self.ymm6.0[1] = hi;
+            }
+            Register::XMM7 => {
+                self.ymm7.0[0] = lo;
+                self.ymm7.0[1] = hi;
+            }
+            Register::XMM8 => {
+                self.ymm8.0[0] = lo;
+                self.ymm8.0[1] = hi;
+            }
+            Register::XMM9 => {
+                self.ymm9.0[0] = lo;
+                self.ymm9.0[1] = hi;
+            }
+            Register::XMM10 => {
+                self.ymm10.0[0] = lo;
+                self.ymm10.0[1] = hi;
+            }
+            Register::XMM11 => {
+                self.ymm11.0[0] = lo;
+                self.ymm11.0[1] = hi;
+            }
+            Register::XMM12 => {
+                self.ymm12.0[0] = lo;
+                self.ymm12.0[1] = hi;
+            }
+            Register::XMM13 => {
+                self.ymm13.0[0] = lo;
+                self.ymm13.0[1] = hi;
+            }
+            Register::XMM14 => {
+                self.ymm14.0[0] = lo;
+                self.ymm14.0[1] = hi;
+            }
+            Register::XMM15 => {
+                self.ymm15.0[0] = lo;
+                self.ymm15.0[1] = hi;
+            }
             _ => {}
         }
     }

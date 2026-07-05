@@ -281,9 +281,13 @@ pub fn emulate_instruction(
         Mnemonic::Movdqa => instructions::movdqa::execute(emu, ins, instruction_sz, rep_step),
         // `andps` and `andpd` are both a full 128-bit bitwise AND; the ps/pd
         // element width is irrelevant to the operation, so they share a handler.
-        Mnemonic::Andpd | Mnemonic::Andps => instructions::andpd::execute(emu, ins, instruction_sz, rep_step),
+        Mnemonic::Andpd | Mnemonic::Andps => {
+            instructions::andpd::execute(emu, ins, instruction_sz, rep_step)
+        }
         // `orps`/`orpd`: identical full 128-bit bitwise OR, share a handler.
-        Mnemonic::Orpd | Mnemonic::Orps => instructions::orpd::execute(emu, ins, instruction_sz, rep_step),
+        Mnemonic::Orpd | Mnemonic::Orps => {
+            instructions::orpd::execute(emu, ins, instruction_sz, rep_step)
+        }
         Mnemonic::Pextrw => instructions::pextrw::execute(emu, ins, instruction_sz, rep_step),
         Mnemonic::Pinsrw => instructions::pinsrw::execute(emu, ins, instruction_sz, rep_step),
         Mnemonic::Addps => instructions::addps::execute(emu, ins, instruction_sz, rep_step),

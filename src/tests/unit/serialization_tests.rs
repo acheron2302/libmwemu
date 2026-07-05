@@ -222,9 +222,7 @@ fn test_aarch64_minidump_roundtrip() {
 
     // Validate dump is parseable by the minidump crate
     let dump = Minidump::read_path(&dump_path).unwrap();
-    let sys_info = dump
-        .get_stream::<minidump::MinidumpSystemInfo>()
-        .unwrap();
+    let sys_info = dump.get_stream::<minidump::MinidumpSystemInfo>().unwrap();
     assert!(matches!(sys_info.cpu, minidump::system_info::Cpu::Arm64));
 
     // Import back and verify register state
@@ -254,8 +252,10 @@ fn test_aarch64_native_serialization_fixture_roundtrip() {
         .spawn(|| {
             helpers::setup();
 
-            let path =
-                write_tmp("mwemu_test_serialize_elf64_aarch64_add.bin", ELF64_AARCH64_ADD);
+            let path = write_tmp(
+                "mwemu_test_serialize_elf64_aarch64_add.bin",
+                ELF64_AARCH64_ADD,
+            );
 
             let mut emu = crate::emu_aarch64();
             emu.load_code(path.to_str().unwrap());
@@ -283,8 +283,10 @@ fn test_aarch64_minidump_fixture_roundtrip() {
         .spawn(|| {
             helpers::setup();
 
-            let sample_path =
-                write_tmp("mwemu_test_minidump_elf64_aarch64_add.bin", ELF64_AARCH64_ADD);
+            let sample_path = write_tmp(
+                "mwemu_test_minidump_elf64_aarch64_add.bin",
+                ELF64_AARCH64_ADD,
+            );
             let temp_dir = TempDir::new("mwemu_minidump_aarch64_future").unwrap();
             let dump_path = temp_dir.path().join("elf64_aarch64_add.dmp");
 

@@ -39,7 +39,11 @@ pub(super) fn handle_syscall64_brk(emu: &mut emu::Emu) {
         emu.regs_mut().rax = emu.heap_addr;
         log::trace!(
             "{}** {} syscall brk(0x{:x}) =0x{:x} {}",
-            emu.colors.light_red, emu.pos, requested, emu.heap_addr, emu.colors.nc
+            emu.colors.light_red,
+            emu.pos,
+            requested,
+            emu.heap_addr,
+            emu.colors.nc
         );
         return;
     }

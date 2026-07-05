@@ -12,7 +12,10 @@ pub fn execute(emu: &mut Emu, ins: &Instruction, instruction_sz: usize, _rep_ste
     // write 16 bytes (clobbering the adjacent qword — e.g. a stack GS cookie)
     // and the load pull garbage into the upper 64 bits instead of zeroing them.
     if ins.op_count() == 2 && (sz0 == 128 || sz1 == 128) {
-        emu.show_instruction(color!("LightCyan"), &crate::emu::decoded_instruction::DecodedInstruction::X86(*ins));
+        emu.show_instruction(
+            color!("LightCyan"),
+            &crate::emu::decoded_instruction::DecodedInstruction::X86(*ins),
+        );
 
         if sz0 == 128 && sz1 == 128 {
             // movsd xmm0, xmm1 — copy the low 64 bits, leave dst's high 64 intact.
@@ -24,8 +27,7 @@ pub fn execute(emu: &mut Emu, ins: &Instruction, instruction_sz: usize, _rep_ste
                 Some(v) => v,
                 None => return false,
             };
-            let res = (dst & 0xffffffff_ffffffff_00000000_00000000)
-                | (src & 0xffffffff_ffffffff);
+            let res = (dst & 0xffffffff_ffffffff_00000000_00000000) | (src & 0xffffffff_ffffffff);
             emu.set_operand_xmm_value_128(ins, 0, res);
         } else if sz0 == 128 {
             // movsd xmm0, m64 — load the low 64 bits and ZERO the upper 64 bits.
@@ -47,10 +49,16 @@ pub fn execute(emu: &mut Emu, ins: &Instruction, instruction_sz: usize, _rep_ste
 
         if emu.rep.is_some() {
             if emu.rep.unwrap() == 0 {
-                emu.show_instruction(color!("LightCyan"), &crate::emu::decoded_instruction::DecodedInstruction::X86(*ins));
+                emu.show_instruction(
+                    color!("LightCyan"),
+                    &crate::emu::decoded_instruction::DecodedInstruction::X86(*ins),
+                );
             }
         } else {
-            emu.show_instruction(color!("LightCyan"), &crate::emu::decoded_instruction::DecodedInstruction::X86(*ins));
+            emu.show_instruction(
+                color!("LightCyan"),
+                &crate::emu::decoded_instruction::DecodedInstruction::X86(*ins),
+            );
         }
 
         if emu.cfg.is_x64() {

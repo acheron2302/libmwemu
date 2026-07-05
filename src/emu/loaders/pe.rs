@@ -45,7 +45,7 @@ impl Emu {
     /// cyclic stuff: [load_pe] -> [iat-binding]  ->  [load_library] -> [load_pe]
     /// Powered by rs-header's pe32 implementation.
     pub fn load_pe32(&mut self, filename: &str, set_entry: bool, force_base: u32) -> (u32, u32) {
-        let is_maps = filename.contains("windows/x86/") ;
+        let is_maps = filename.contains("windows/x86/");
         let map_name = self.filename_to_mapname(filename);
         let filename2 = map_name;
         let raw = Self::read_pe_raw(filename);
@@ -215,8 +215,14 @@ impl Emu {
 
         // 5. ldr table entry creation and link
         if set_entry {
-            let _space_addr =
-                peb32::create_ldr_entry(self, base, self.regs().rip as u32, &filename2, 0, 0x2c1950);
+            let _space_addr = peb32::create_ldr_entry(
+                self,
+                base,
+                self.regs().rip as u32,
+                &filename2,
+                0,
+                0x2c1950,
+            );
             let exe_name = self.cfg.exe_name.clone();
             peb32::update_ldr_entry_base(&exe_name, base as u64, self);
         }
@@ -304,7 +310,9 @@ impl Emu {
                 }
             };
 
-            let copy_len = (sect.size_of_raw_data as usize).min(map_sz as usize).min(ptr.len());
+            let copy_len = (sect.size_of_raw_data as usize)
+                .min(map_sz as usize)
+                .min(ptr.len());
             if copy_len > 0 {
                 map.memcpy(&ptr[..copy_len], copy_len);
             }
@@ -320,7 +328,7 @@ impl Emu {
     /// cyclic stuff: [load_pe] -> [iat-binding]  ->  [load_library] -> [load_pe]
     /// Powered by rs-header's pe64 implementation.
     pub fn load_pe64(&mut self, filename: &str, set_entry: bool, force_base: u64) -> (u64, u32) {
-        let is_maps = filename.contains("windows/x86_64/") || filename.contains("windows/aarch64/") ;
+        let is_maps = filename.contains("windows/x86_64/") || filename.contains("windows/aarch64/");
         let map_name = self.filename_to_mapname(filename);
         let filename2 = map_name;
         let raw = Self::read_pe_raw(filename);
@@ -461,7 +469,9 @@ impl Emu {
             };
 
             // Copy only as many bytes as fit in the virtual mapping.
-            let copy_len = (sect.size_of_raw_data as usize).min(map_sz as usize).min(ptr.len());
+            let copy_len = (sect.size_of_raw_data as usize)
+                .min(map_sz as usize)
+                .min(ptr.len());
 
             if copy_len > 0 {
                 map.memcpy(&ptr[..copy_len], copy_len);

@@ -74,7 +74,11 @@ impl Emu {
         // ship in the default maps folder — extract only those from the ISO.
         let targets = wanted_dlls(&default_folder)?;
         if targets.is_empty() {
-            return Err(format!("no .dll files found in default maps folder {}", default_folder.display()).into());
+            return Err(format!(
+                "no .dll files found in default maps folder {}",
+                default_folder.display()
+            )
+            .into());
         }
 
         // 1) Pull the install image out of the ISO without mounting it.
@@ -156,8 +160,7 @@ fn iso_cache_is_fresh(dest: &Path, iso_path: &str, iso_len: u64) -> bool {
     let Ok(content) = fs::read_to_string(&marker) else {
         return false;
     };
-    content.trim() == cache_marker_value(iso_path, iso_len)
-        && dest.join("kernel32.dll").is_file()
+    content.trim() == cache_marker_value(iso_path, iso_len) && dest.join("kernel32.dll").is_file()
 }
 
 fn cache_marker_value(iso_path: &str, iso_len: u64) -> String {
@@ -165,7 +168,10 @@ fn cache_marker_value(iso_path: &str, iso_len: u64) -> String {
 }
 
 fn write_cache_marker(dest: &Path, iso_path: &str, iso_len: u64) -> Result<(), Box<dyn Error>> {
-    fs::write(dest.join(".mwemu-iso"), cache_marker_value(iso_path, iso_len))?;
+    fs::write(
+        dest.join(".mwemu-iso"),
+        cache_marker_value(iso_path, iso_len),
+    )?;
     Ok(())
 }
 
@@ -264,7 +270,10 @@ fn pick_image_files(
         }
         // First path component is the WIM image index ("1", "2", …).
         let image_idx = lower.split('/').next().unwrap_or("").to_string();
-        by_image.entry(image_idx).or_default().push(path.to_string());
+        by_image
+            .entry(image_idx)
+            .or_default()
+            .push(path.to_string());
     }
 
     Ok(by_image

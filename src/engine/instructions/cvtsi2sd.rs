@@ -5,7 +5,10 @@ use iced_x86::Instruction;
 // CVTSI2SD xmm, r/m32|r/m64 : convert a signed integer to a scalar double,
 // written to the low 64 bits of the destination (upper 64 bits preserved).
 pub fn execute(emu: &mut Emu, ins: &Instruction, _instruction_sz: usize, _rep_step: bool) -> bool {
-    emu.show_instruction(color!("Cyan"), &crate::emu::decoded_instruction::DecodedInstruction::X86(*ins));
+    emu.show_instruction(
+        color!("Cyan"),
+        &crate::emu::decoded_instruction::DecodedInstruction::X86(*ins),
+    );
 
     let sz1 = emu.get_operand_sz(ins, 1);
 

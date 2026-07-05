@@ -2,9 +2,9 @@ use crate::maps::mem64::Permission;
 use crate::tests::helpers;
 use crate::winapi::winapi64;
 use crate::*; // Assuming crate root has winapi module public or we can access it.
-              // If `winapi` mod is not public, we might have issues.
-              // Existing tests import `use crate::*;`.
-              // `lib.rs` usually has `pub mod winapi;`.
+// If `winapi` mod is not public, we might have issues.
+// Existing tests import `use crate::*;`.
+// `lib.rs` usually has `pub mod winapi;`.
 
 #[test]
 fn test_write_file() {
@@ -60,7 +60,8 @@ fn test_get_module_handle_64() {
         Permission::READ_EXECUTE,
     );
 
-    let h_mod = helpers::call_winapi64(&mut emu, winapi64::kernel32::GetModuleHandleA, &[name_addr]);
+    let h_mod =
+        helpers::call_winapi64(&mut emu, winapi64::kernel32::GetModuleHandleA, &[name_addr]);
     assert_eq!(
         h_mod, 0x7FF10000000,
         "GetModuleHandleA('kernel32.dll') returned incorrect base"
@@ -124,9 +125,16 @@ fn test_heap_alloc_64() {
 
     // HeapAlloc(hHeap, dwFlags, dwBytes) via the x64 calling convention.
     // Small allocation → managed heap path (< 0x8000).
-    let p1 = helpers::call_winapi64(&mut emu, winapi64::kernel32::HeapAlloc, &[0x1234, 0x8, 0x100]);
+    let p1 = helpers::call_winapi64(
+        &mut emu,
+        winapi64::kernel32::HeapAlloc,
+        &[0x1234, 0x8, 0x100],
+    );
     assert!(p1 != 0, "HeapAlloc(0x100) returned NULL");
-    assert!(emu.maps.is_mapped(p1), "HeapAlloc(0x100) pointer not mapped");
+    assert!(
+        emu.maps.is_mapped(p1),
+        "HeapAlloc(0x100) pointer not mapped"
+    );
     emu.maps.write_qword(p1, 0xdead_beef_cafe_babe);
     assert_eq!(emu.maps.read_qword(p1).unwrap(), 0xdead_beef_cafe_babe);
 
@@ -136,7 +144,11 @@ fn test_heap_alloc_64() {
     assert!(p2 != p1, "two allocations returned the same pointer");
 
     // Large allocation → dedicated map path (>= 0x8000).
-    let big = helpers::call_winapi64(&mut emu, winapi64::kernel32::HeapAlloc, &[0x1234, 0, 0x20000]);
+    let big = helpers::call_winapi64(
+        &mut emu,
+        winapi64::kernel32::HeapAlloc,
+        &[0x1234, 0, 0x20000],
+    );
     assert!(big != 0, "large HeapAlloc returned NULL");
     assert!(emu.maps.is_mapped(big), "large HeapAlloc not mapped");
     emu.maps.write_dword(big + 0x1fff0, 0x11223344);
