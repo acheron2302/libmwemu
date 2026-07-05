@@ -386,7 +386,7 @@ fn SetUnhandledExceptionFilter(emu: &mut emu::Emu) {
         emu.colors.nc
     );
 
-    emu.set_uef(ptr1 as u64);
+    emu.set_uef(ptr1);
     emu.regs_mut().rax = 0;
 }
 

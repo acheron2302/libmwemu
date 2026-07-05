@@ -101,8 +101,8 @@ pub fn ReadFile(emu: &mut emu::Emu) {
                 bytes
             );
             // Write the data back to the emulator's memory
-            if bytes > 0 {
-                if !emu.maps.write_bytes(lp_buffer, &buffer) {
+            if bytes > 0
+                && !emu.maps.write_bytes(lp_buffer, &buffer) {
                     log_red!(
                         emu,
                         "** {} kernel32!ReadFile ERROR: Failed to write data to buffer at 0x{:x}",
@@ -113,7 +113,6 @@ pub fn ReadFile(emu: &mut emu::Emu) {
                     emu.regs_mut().rax = 0; // FALSE
                     return;
                 }
-            }
             bytes
         }
         Err(e) => {
@@ -144,8 +143,8 @@ pub fn ReadFile(emu: &mut emu::Emu) {
     };
 
     // Write the number of bytes read to the output parameter
-    if lp_number_of_bytes_read != 0 {
-        if !emu
+    if lp_number_of_bytes_read != 0
+        && !emu
             .maps
             .write_dword(lp_number_of_bytes_read, bytes_read as u32)
         {
@@ -159,7 +158,6 @@ pub fn ReadFile(emu: &mut emu::Emu) {
             emu.regs_mut().rax = 0; // FALSE
             return;
         }
-    }
 
     // Success!
     emu.last_error = 0; // NO_ERROR

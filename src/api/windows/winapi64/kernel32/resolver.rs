@@ -18,8 +18,8 @@ pub fn dump_module_iat(emu: &mut emu::Emu, module: &str) {
                 log::trace!(
                     "0x{:x} {}!{}",
                     ordinal.func_va,
-                    &flink.mod_name,
-                    &ordinal.func_name
+                    flink.mod_name,
+                    ordinal.func_name
                 );
             }
         }

@@ -19,7 +19,7 @@ pub enum ExceptionType {
 
 impl PartialEq for ExceptionType {
     fn eq(&self, other: &Self) -> bool {
-        return *self as u32 == *other as u32;
+        *self as u32 == *other as u32
     }
 }
 
@@ -47,21 +47,21 @@ impl std::fmt::Display for ExceptionType {
 
 pub fn exception_type_code(ex_type: ExceptionType) -> u32 {
     match ex_type {
-        ExceptionType::Int3 => return constants::STATUS_BREAKPOINT,
-        ExceptionType::Div0 => return constants::STATUS_INTEGER_DIVIDE_BY_ZERO,
-        ExceptionType::SignChangeOnDivision => return constants::STATUS_INTEGER_OVERFLOW,
-        ExceptionType::PopfCannotReadStack => return constants::STATUS_POPF_CANNOT_READ_STACK,
-        ExceptionType::WritingWord => return constants::STATUS_WRITING_WORD,
-        ExceptionType::SettingRipToNonMappedAddr => return constants::STATUS_READING_RIP,
-        ExceptionType::QWordDereferencing => return constants::STATUS_QWORD_DEREFERENCING,
-        ExceptionType::DWordDereferencing => return constants::STATUS_DWORD_DEREFERENCING,
-        ExceptionType::WordDereferencing => return constants::STATUS_WORD_DEREFERENCING,
-        ExceptionType::ByteDereferencing => return constants::STATUS_BYTE_DEREFERENCING,
+        ExceptionType::Int3 => constants::STATUS_BREAKPOINT,
+        ExceptionType::Div0 => constants::STATUS_INTEGER_DIVIDE_BY_ZERO,
+        ExceptionType::SignChangeOnDivision => constants::STATUS_INTEGER_OVERFLOW,
+        ExceptionType::PopfCannotReadStack => constants::STATUS_POPF_CANNOT_READ_STACK,
+        ExceptionType::WritingWord => constants::STATUS_WRITING_WORD,
+        ExceptionType::SettingRipToNonMappedAddr => constants::STATUS_READING_RIP,
+        ExceptionType::QWordDereferencing => constants::STATUS_QWORD_DEREFERENCING,
+        ExceptionType::DWordDereferencing => constants::STATUS_DWORD_DEREFERENCING,
+        ExceptionType::WordDereferencing => constants::STATUS_WORD_DEREFERENCING,
+        ExceptionType::ByteDereferencing => constants::STATUS_BYTE_DEREFERENCING,
         ExceptionType::BadAddressDereferencing => {
-            return constants::STATUS_BAD_ADDRESS_DEREFERENCING;
+            constants::STATUS_BAD_ADDRESS_DEREFERENCING
         }
-        ExceptionType::SettingXmmOperand => return constants::STATUS_SETTING_XMM_OPERAND,
-        ExceptionType::ReadingXmmOperand => return constants::STATUS_READING_XMM_OPERAND,
+        ExceptionType::SettingXmmOperand => constants::STATUS_SETTING_XMM_OPERAND,
+        ExceptionType::ReadingXmmOperand => constants::STATUS_READING_XMM_OPERAND,
     }
 }
 

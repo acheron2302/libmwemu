@@ -1032,7 +1032,7 @@ impl Console {
                 "dump" => {
                     if emu.cfg.dump_filename.is_some() {
                         serialization::Serialization::dump(
-                            &emu,
+                            emu,
                             emu.cfg.dump_filename.as_ref().unwrap(),
                         );
                     }
@@ -1126,7 +1126,7 @@ impl Console {
                     } else if cmd.starts_with("m ") {
                         let parts: Vec<&str> = cmd.split_whitespace().collect();
                         if parts.len() >= 2 {
-                            emu.maps.print_maps_keyword(&parts[1]);
+                            emu.maps.print_maps_keyword(parts[1]);
                         }
                     } else if cmd.starts_with("r2 ") {
                         let parts: Vec<&str> = cmd.split_whitespace().collect();

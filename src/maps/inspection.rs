@@ -98,7 +98,7 @@ impl Maps {
                 None => break,
             };
 
-            let name = self.get_addr_name(value).unwrap_or_else(|| "");
+            let name = self.get_addr_name(value).unwrap_or("");
 
             log::trace!(
                 "0x{:x}: 0x{:x} ({}) '{}'",
@@ -122,7 +122,7 @@ impl Maps {
 
             if !self.is_64bits {
                 // only in 32bits make sense derreference dwords in memory
-                let name = self.get_addr_name(value.into()).unwrap_or_else(|| "");
+                let name = self.get_addr_name(value.into()).unwrap_or("");
 
                 let mut s = "".to_string();
                 if !name.is_empty() {

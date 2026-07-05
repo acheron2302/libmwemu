@@ -331,7 +331,7 @@ pub fn gateway(emu: &mut Emu) {
             );
             // Extract the filename (last path segment) from the NT path.
             let basename = nt_name
-                .rsplit(|c| c == '\\' || c == '/')
+                .rsplit(['\\', '/'])
                 .next()
                 .unwrap_or("")
                 .to_lowercase();
@@ -344,7 +344,7 @@ pub fn gateway(emu: &mut Emu) {
                     // recent value is good enough for any single emulation.
                     const FAKE_FILETIME: u64 = 0x01DA_0000_0000_0000; // ~2023
                     const FILE_ATTRIBUTE_NORMAL: u32 = 0x80;
-                    let _ = emu.maps.write_qword(file_info_ptr + 0x00, FAKE_FILETIME);
+                    let _ = emu.maps.write_qword(file_info_ptr, FAKE_FILETIME);
                     let _ = emu.maps.write_qword(file_info_ptr + 0x08, FAKE_FILETIME);
                     let _ = emu.maps.write_qword(file_info_ptr + 0x10, FAKE_FILETIME);
                     let _ = emu.maps.write_qword(file_info_ptr + 0x18, FAKE_FILETIME);
@@ -528,7 +528,7 @@ pub fn gateway(emu: &mut Emu) {
                     for off in 0..NEED as u64 {
                         let _ = emu.maps.write_byte(sysinfo + off, 0);
                     }
-                    let _ = emu.maps.write_dword(sysinfo + 0x00, 4); // Relationship = RelationGroup
+                    let _ = emu.maps.write_dword(sysinfo, 4); // Relationship = RelationGroup
                     let _ = emu.maps.write_dword(sysinfo + 0x04, NEED); // Size
                     let _ = emu.maps.write_word(sysinfo + 0x08, 1); // MaximumGroupCount
                     let _ = emu.maps.write_word(sysinfo + 0x0a, 1); // ActiveGroupCount
@@ -586,7 +586,7 @@ pub fn gateway(emu: &mut Emu) {
                 emu, obj_attr,
             );
             let basename = nt_name
-                .rsplit(|c| c == '\\' || c == '/')
+                .rsplit(['\\', '/'])
                 .next()
                 .unwrap_or("")
                 .to_lowercase();
@@ -638,7 +638,7 @@ pub fn gateway(emu: &mut Emu) {
                 emu, obj_attr,
             );
             let basename = nt_name
-                .rsplit(|c| c == '\\' || c == '/')
+                .rsplit(['\\', '/'])
                 .next()
                 .unwrap_or("")
                 .to_lowercase();

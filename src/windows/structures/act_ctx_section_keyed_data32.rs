@@ -15,6 +15,12 @@ pub struct ActCtxSectionKeyedData32 {
     pub assembly_metadata: [u8; 64],
 }
 
+impl Default for ActCtxSectionKeyedData32 {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ActCtxSectionKeyedData32 {
     pub fn new() -> ActCtxSectionKeyedData32 {
         ActCtxSectionKeyedData32 {

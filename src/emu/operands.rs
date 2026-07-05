@@ -293,7 +293,9 @@ impl Emu {
                 }
                 0x58 => {
                     // Get or create static TLS array (for __declspec(thread) variables)
-                    let static_tls = match self.maps.get_mem2("static_tls_array") {
+                    
+
+                    match self.maps.get_mem2("static_tls_array") {
                         Some(mem) => mem.get_base(),
                         None => {
                             // This should be sized based on the number of modules with .tls sections
@@ -307,9 +309,7 @@ impl Emu {
 
                             tls_array
                         }
-                    };
-
-                    static_tls
+                    }
                 }
                 _ => {
                     // Fall back to reading from actual TEB memory so that real ntdll code
@@ -409,7 +409,7 @@ impl Emu {
                 let name = self
                     .maps
                     .get_addr_name(mem_addr)
-                    .unwrap_or_else(|| "not mapped");
+                    .unwrap_or("not mapped");
                 let memory_operation = MemoryOperation {
                     pos: self.pos,
                     rip: self.regs().rip,
@@ -699,7 +699,7 @@ impl Emu {
                 let should_flush = self
                     .maps
                     .get_mem_by_addr(mem_addr)
-                    .map_or(false, |mem1| mem1.can_execute());
+                    .is_some_and(|mem1| mem1.can_execute());
                 if should_flush {
                     let idx = self.x86_instruction_cache_ref().get_index_of(mem_addr, 0);
                     self.x86_instruction_cache().flush_cache_line(idx);
@@ -852,7 +852,7 @@ impl Emu {
                     let name = self
                         .maps
                         .get_addr_name(mem_addr)
-                        .unwrap_or_else(|| "not mapped");
+                        .unwrap_or("not mapped");
                     let memory_operation = MemoryOperation {
                         pos: self.pos,
                         rip: self.regs().rip,
@@ -1038,9 +1038,9 @@ impl Emu {
                     }
 
                     let bytes = self.maps.read_bytes_array::<32>(mem_addr);
-                    let value = regs64::U256::from_little_endian(&bytes);
+                    
 
-                    value
+                    regs64::U256::from_little_endian(&bytes)
                 } else {
                     regs64::U256::from(mem_addr)
                 }

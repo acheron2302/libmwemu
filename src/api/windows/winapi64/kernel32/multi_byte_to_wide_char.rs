@@ -31,7 +31,7 @@ pub fn MultiByteToWideChar(emu: &mut emu::Emu) {
     }
 
     // validation 3: size too big
-    if cch_wide_char < 0 || cch_wide_char > 1_000_000 {
+    if !(0..=1_000_000).contains(&cch_wide_char) {
         log::warn!(
             "[ALERT] MultiByteToWideChar: cch_wide_char = {} exceeds 1_000_000",
             cch_wide_char,
@@ -39,7 +39,7 @@ pub fn MultiByteToWideChar(emu: &mut emu::Emu) {
     }
 
     // validation 4: if cb_multi_byte is negative or too big
-    if cb_multi_byte < 0 || cb_multi_byte > 10_000_000 {
+    if !(0..=10_000_000).contains(&cb_multi_byte) {
         log::warn!(
             "[ALERT] MultiByteToWideChar: cb_multi_byte = {} is suspicious",
             cb_multi_byte

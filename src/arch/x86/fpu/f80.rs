@@ -26,6 +26,12 @@ pub struct F80 {
     pub st: u128,
 }
 
+impl Default for F80 {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl F80 {
     pub fn new() -> Self {
         F80 { st: 0 }
@@ -93,7 +99,7 @@ impl F80 {
     }
 
     pub fn fix(&mut self) {
-        self.st = self.st & FPU_80_BITS_MAX;
+        self.st &= FPU_80_BITS_MAX;
     }
 
     pub fn is_negative(&self) -> bool {
@@ -157,7 +163,7 @@ impl F80 {
     }
 
     fn get_mantissa_with_integer_bit(&self) -> u64 {
-        let mantissa = (self.st & MANTISSA_MASK_NOINT) >> 0;
+        let mantissa = self.st & MANTISSA_MASK_NOINT ;
         let int_bit = ((self.st & INT_BIT_MASK) >> 63) as u64;
         (mantissa as u64) | (int_bit << 63)
     }

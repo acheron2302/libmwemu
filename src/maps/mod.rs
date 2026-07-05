@@ -250,11 +250,11 @@ impl Maps {
     }
 
     pub fn read_f64(&self, addr: u64) -> Option<f64> {
-        self.read_qword(addr).map(|v| f64::from_bits(v))
+        self.read_qword(addr).map(f64::from_bits)
     }
 
     pub fn read_f32(&self, addr: u64) -> Option<f32> {
-        self.read_dword(addr).map(|v| f32::from_bits(v))
+        self.read_dword(addr).map(f32::from_bits)
     }
 
     pub fn write_f64(&mut self, addr: u64, value: f64) -> bool {
@@ -407,11 +407,10 @@ impl Maps {
 
         let mem_key = entry.get_mem();
         match self.mem_slab.get(mem_key) {
-            Some(mem) => {
-                if mem.inside(addr) {
-                    return Some(&mem); // Clone the &Mem64
+            Some(mem)
+                if mem.inside(addr) => {
+                    return Some(mem); // Clone the &Mem64
                 }
-            }
             _ => (), // TLB miss now search in maps
         };
 
@@ -518,7 +517,7 @@ impl Maps {
     /// Iterates maps named `*.pe`, reads the PE optional-header `SizeOfImage`,
     /// and checks whether `addr` falls within `[base, base+size_of_image)`.
     pub fn find_pe_image_info(&self, addr: u64) -> Option<(u64, u64)> {
-        for (name, _) in self.name_map.iter() {
+        for name in self.name_map.keys() {
             if !name.ends_with(".pe") {
                 continue;
             }
@@ -630,7 +629,7 @@ impl Maps {
         let id = self
             .name_map
             .get(name)
-            .expect(format!("map name {} not found", name).as_str());
+            .unwrap_or_else(|| panic!("map name {} not found", name));
         let mem = self.mem_slab.get_mut(*id).unwrap();
         mem.clear();
         self.maps.remove(&mem.get_base());
@@ -722,7 +721,7 @@ impl Maps {
         }
 
         // Here we assume that we go from the bottom to the most
-        for (_, mem_key) in self.maps.iter() {
+        for mem_key in self.maps.values() {
             let mem = self.mem_slab.get(*mem_key).unwrap();
             let base = mem.get_base();
 
@@ -781,7 +780,7 @@ impl Maps {
             if mem.get_name().to_string().starts_with("alloc_") {
                 let mut ppath = path.clone();
                 ppath.push('/');
-                ppath.push_str(&mem.get_name());
+                ppath.push_str(mem.get_name());
                 ppath.push_str(".bin");
                 mem.save(mem.get_base(), mem.size(), ppath);
             }

@@ -42,7 +42,7 @@ impl SystemInfo64 {
 
     pub fn save(&mut self, addr: u64, maps: &mut Maps) {
         // First union/struct (4 bytes total)
-        maps.write_word(addr + 0, self.processor_architecture as u16);
+        maps.write_word(addr, self.processor_architecture as u16);
         maps.write_word(addr + 2, self.reserved);
 
         // Rest of the structure

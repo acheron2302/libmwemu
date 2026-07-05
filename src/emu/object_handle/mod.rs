@@ -24,6 +24,12 @@ pub struct HandleManagement {
     handle_types: Slab<HandleType>,
 }
 
+impl Default for HandleManagement {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl HandleManagement {
     pub fn new() -> Self {
         Self {

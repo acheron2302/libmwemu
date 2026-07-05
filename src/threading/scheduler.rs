@@ -176,11 +176,10 @@ impl ThreadScheduler {
     /// Uses the arch-dispatched decode_and_execute() and advance_pc() on Emu.
     pub fn execute_thread_instruction(emu: &mut Emu, thread_id: usize) -> bool {
         // Switch to target thread if needed
-        if emu.current_thread_id != thread_id {
-            if !Self::switch_to_thread(emu, thread_id) {
+        if emu.current_thread_id != thread_id
+            && !Self::switch_to_thread(emu, thread_id) {
                 return false;
             }
-        }
 
         let pc = emu.pc();
 

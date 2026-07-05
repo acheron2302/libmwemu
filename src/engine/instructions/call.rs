@@ -42,12 +42,12 @@ pub fn execute(emu: &mut Emu, ins: &Instruction, instruction_sz: usize, _rep_ste
         );
     }
 
-    if emu.regs_mut().rip == addr - 5 {
-        if emu.cfg.verbose >= 1 {
+    if emu.regs_mut().rip == addr - 5
+        && emu.cfg.verbose >= 1 {
             log::trace!("call next instruction, prolly call/pop");
         }
         //emu.stack_lvl[emu.stack_lvl_idx] -= 1;
-    } /*else {
+     /*else {
     emu.stack_lvl.push(0);
     emu.stack_lvl_idx += 1;
     }*/
@@ -76,12 +76,12 @@ pub fn execute(emu: &mut Emu, ins: &Instruction, instruction_sz: usize, _rep_ste
         if !emu.stack_push64(emu.regs().rip + instruction_sz as u64) {
             return false;
         }
-        return emu.set_rip(addr, false);
+        emu.set_rip(addr, false)
     } else {
         if !emu.stack_push32(emu.regs().get_eip() as u32 + instruction_sz as u32) {
             return false;
         }
-        return emu.set_eip(addr, false);
+        emu.set_eip(addr, false)
     }
     //true
 }

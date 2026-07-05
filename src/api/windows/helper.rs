@@ -65,7 +65,7 @@ pub fn handler_create(uri: &str) -> u64 {
     // Start at 3 so allocated file descriptors never collide with the standard
     // streams (0=stdin, 1=stdout, 2=stderr) on the Linux syscall path; harmless
     // for Windows handles, which carry no special meaning at 1/2.
-    let new_id: u64 = if handles.len() == 0 {
+    let new_id: u64 = if handles.is_empty() {
         3
     } else {
         let last_id = handles[handles.len() - 1].id;
@@ -97,18 +97,12 @@ pub fn handler_print() {
 
 pub fn handler_exist(hndl: u64) -> bool {
     let handles = HANDLERS.lock().unwrap();
-    match handles.iter().position(|h| h.id == hndl) {
-        Some(_) => true,
-        None => false,
-    }
+    handles.iter().position(|h| h.id == hndl).is_some()
 }
 
 pub fn handler_put_bytes(hndl: u64, data: &[u8]) {
     let mut handles = HANDLERS.lock().unwrap();
-    match handles.iter().position(|h| h.id == hndl) {
-        Some(idx) => handles[idx].data = data.to_vec(),
-        None => (),
-    }
+    if let Some(idx) = handles.iter().position(|h| h.id == hndl) { handles[idx].data = data.to_vec() }
 }
 
 pub fn handler_get_uri(hndl: u64) -> String {
@@ -127,7 +121,7 @@ pub fn handler_find_by_uri(uri: &str) -> Option<u64> {
 pub fn socket_create() -> u64 {
     let mut sockets = SOCKETS.lock().unwrap();
 
-    let new_socket: u64 = if sockets.len() == 0 {
+    let new_socket: u64 = if sockets.is_empty() {
         sockets.push(0); // stdin
         sockets.push(1); // stdout
         sockets.push(2); // stderr
@@ -153,10 +147,7 @@ pub fn socket_close(sock: u64) -> bool {
 
 pub fn socket_exist(sock: u64) -> bool {
     let sockets = SOCKETS.lock().unwrap();
-    match sockets.iter().position(|s| *s == sock) {
-        Some(_) => true,
-        None => false,
-    }
+    sockets.iter().position(|s| *s == sock).is_some()
 }
 
 pub fn advance_tick(emu: &mut emu::Emu, millis: u64) {

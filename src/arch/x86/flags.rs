@@ -473,7 +473,7 @@ impl Flags {
         if flags.f_of {
             fs.push_str("OF ");
         }
-        fs.push_str("]");
+        fs.push(']');
         log::trace!("\t{} flags: 0x{:x} {}", pos, flags.dump(), fs);
     }
 
@@ -1249,7 +1249,7 @@ impl Flags {
             return value0 & 0xff;
         }
 
-        let result = ((value0 << count) & 0xff) as u64;
+        let result = (value0 << count) & 0xff ;
 
         self.f_cf = if count <= 8 {
             ((value0 >> (8 - count)) & 0x1) == 0x1
@@ -1273,7 +1273,7 @@ impl Flags {
             return value0 & 0xffff;
         }
 
-        let result = ((value0 << count) & 0xffff) as u64;
+        let result = (value0 << count) & 0xffff ;
 
         self.f_cf = if count <= 16 {
             ((value0 >> (16 - count)) & 0x1) == 0x1
@@ -1297,7 +1297,7 @@ impl Flags {
             return value0 & 0xffff_ffff;
         }
 
-        let result = ((value0 << count) & 0xffff_ffff) as u64;
+        let result = (value0 << count) & 0xffff_ffff ;
 
         self.f_cf = if count <= 32 {
             ((value0 >> (32 - count)) & 0x1) == 0x1
@@ -1345,7 +1345,7 @@ impl Flags {
         }
 
         let count = value1 & 0x3f;
-        let result = (value0 << count) & 0xffffffffffffffff;
+        let result = value0 << count ;
         self.f_cf = ((value0 >> (64 - count)) & 0x1) == 0x1;
         self.f_of = (self.f_cf as u64 ^ (result >> 63)) == 0x1;
         self.calc_flags(result, 64);
@@ -1393,7 +1393,7 @@ impl Flags {
 
     // TODO: update shl1 the same as shl2
     pub fn shl1p64(&mut self, value: u64) -> u64 {
-        let result = (value << 1) & 0xffffffffffffffff;
+        let result = value << 1 ;
         self.f_cf = ((value >> 63) & 0x1) == 0x1;
         self.f_of = (self.f_cf as u64 ^ (result >> 63)) == 0x1;
         self.calc_flags(result, 64);
@@ -1430,7 +1430,7 @@ impl Flags {
             return value0 & 0xff;
         }
 
-        let result = ((value0 >> count) & 0xff) as u64;
+        let result = (value0 >> count) & 0xff ;
 
         self.f_cf = if count <= 8 {
             ((value0 >> (count - 1)) & 0x1) == 1
@@ -1454,7 +1454,7 @@ impl Flags {
             return value0 & 0xffff;
         }
 
-        let result = ((value0 >> count) & 0xffff) as u64;
+        let result = (value0 >> count) & 0xffff ;
 
         self.f_cf = if count <= 16 {
             ((value0 >> (count - 1)) & 0x1) == 1
@@ -1478,7 +1478,7 @@ impl Flags {
             return value0 & 0xffff_ffff;
         }
 
-        let result = ((value0 >> count) & 0xffff_ffff) as u64;
+        let result = (value0 >> count) & 0xffff_ffff ;
 
         self.f_cf = if count <= 32 {
             ((value0 >> (count - 1)) & 0x1) == 1
@@ -1526,7 +1526,7 @@ impl Flags {
         }
 
         let count = value1 & 0x3f;
-        let result = (value0 >> count) & 0xffffffffffffffff;
+        let result = value0 >> count ;
         self.f_cf = ((value0 >> (count - 1)) & 0x1) == 0x1;
         self.f_of = (((result << 1) ^ result) >> 63 & 0x1) == 0x1;
         self.calc_flags(result, 64);
@@ -1573,7 +1573,7 @@ impl Flags {
     }
 
     pub fn shr1p64(&mut self, value: u64) -> u64 {
-        let result = (value >> 1) & 0xffffffffffffffff;
+        let result = value >> 1 ;
         self.f_cf = (value & 0x1) == 0x1;
         self.f_of = (((result << 1) ^ result) >> 63) == 0x1;
         self.calc_flags(result, 64);
@@ -1656,8 +1656,8 @@ impl Flags {
             self.f_of = false;
         }
 
-        let res = (uresult & 0xffff) as u64;
-        res
+        
+        (uresult & 0xffff) as u64
     }
 
     pub fn imul8p2(&mut self, value0: u64, value1: u64) -> u64 {
@@ -1672,8 +1672,8 @@ impl Flags {
             self.f_of = false;
         }
 
-        let res = (uresult & 0xff) as u64;
-        res
+        
+        (uresult & 0xff) as u64
     }
 
     pub fn rcr_of_and_cf(&mut self, value0: u64, value1: u64, sz: u32) {
@@ -1754,7 +1754,7 @@ impl Flags {
                 let msb = (res >> 63) & 1;
                 self.f_of = self.f_cf ^ (msb != 0);
             }
-            return res as u64;
+            res as u64
         } else {
             let pow = (1u64 << sz) - 1;
             let extended = ((value0 & pow) << 1) | (self.f_cf as u64);
@@ -1766,7 +1766,7 @@ impl Flags {
                 let msb = (res >> (sz - 1)) & 1;
                 self.f_of = self.f_cf ^ (msb != 0);
             }
-            return res;
+            res
         }
     }
 
@@ -1852,7 +1852,7 @@ impl Flags {
 
         // CF = least significant bit of the result after the rotate
         self.f_cf = if count != 0 {
-            ((res >> 0) & 0x1) == 1
+            (res & 0x1) == 1
         } else {
             self.f_cf // unchanged
         };

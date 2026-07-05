@@ -20,7 +20,7 @@ fn format_decoded(decoded: &DecodedInstruction) -> String {
 }
 
 thread_local! {
-    static CURRENT_EMU: RefCell<Option<*const Emu>> = RefCell::new(None);
+    static CURRENT_EMU: RefCell<Option<*const Emu>> = const { RefCell::new(None) };
 }
 
 pub fn with_current_emu<F, R>(f: F) -> Option<R>
@@ -40,7 +40,7 @@ where
             // (e.g. the run loop). That is the fragile part of this global-
             // pointer pattern — see the module note in the issue. It is only
             // used for read-only logging of emulator state.
-            .and_then(|ptr| unsafe { ptr.as_ref().map(|emu| f(emu)) })
+            .and_then(|ptr| unsafe { ptr.as_ref().map(f) })
     })
 }
 

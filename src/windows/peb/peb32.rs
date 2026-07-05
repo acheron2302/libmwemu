@@ -253,7 +253,7 @@ impl Flink {
             self.func_name_tbl = self.func_name_tbl_rva + self.mod_base;
         }
 
-        return true;
+        true
     }
 
     pub fn get_function_ordinal(&self, emu: &mut emu::Emu, function_id: u64) -> OrdinalTable {

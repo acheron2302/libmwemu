@@ -235,10 +235,8 @@ impl Macho64 {
 
             let mem = maps
                 .create_map(&seg.name, seg.vmaddr, seg.vmsize, perm)
-                .expect(&format!(
-                    "cannot create map for segment '{}' at 0x{:x}",
-                    seg.name, seg.vmaddr
-                ));
+                .unwrap_or_else(|_| panic!("cannot create map for segment '{}' at 0x{:x}",
+                    seg.name, seg.vmaddr));
 
             if !seg.data.is_empty() {
                 mem.force_write_bytes(seg.vmaddr, &seg.data);
@@ -343,7 +341,7 @@ impl Macho64 {
                 let starts_offset = u32::from_le_bytes(data[4..8].try_into().unwrap()) as usize;
                 let imports_offset = u32::from_le_bytes(data[8..12].try_into().unwrap()) as usize;
                 let symbols_offset = u32::from_le_bytes(data[12..16].try_into().unwrap()) as usize;
-                let imports_count = u32::from_le_bytes(data[16..20].try_into().unwrap()) as u32;
+                let imports_count = u32::from_le_bytes(data[16..20].try_into().unwrap());
                 let imports_format = u32::from_le_bytes(data[20..24].try_into().unwrap());
 
                 // Parse import table

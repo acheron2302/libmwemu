@@ -13,7 +13,7 @@ impl Emu {
             let name = self
                 .maps
                 .get_addr_name(self.regs().get_esp())
-                .unwrap_or_else(|| "not mapped");
+                .unwrap_or("not mapped");
             let memory_operation = MemoryOperation {
                 pos: self.pos,
                 rip: self.regs().rip,
@@ -90,7 +90,7 @@ impl Emu {
 
         if self.cfg.trace_mem {
             let pc = self.pc();
-            let name = self.maps.get_addr_name(sp).unwrap_or_else(|| "not mapped");
+            let name = self.maps.get_addr_name(sp).unwrap_or("not mapped");
             let memory_operation = MemoryOperation {
                 pos: self.pos,
                 rip: pc,
@@ -191,7 +191,7 @@ impl Emu {
             let name = self
                 .maps
                 .get_addr_name(self.regs().get_esp())
-                .unwrap_or_else(|| "not mapped");
+                .unwrap_or("not mapped");
             let read_operation = MemoryOperation {
                 pos: self.pos,
                 rip: self.regs().rip,
@@ -262,7 +262,7 @@ impl Emu {
 
         if self.cfg.trace_mem {
             let pc = self.pc();
-            let name = self.maps.get_addr_name(sp).unwrap_or_else(|| "not mapped");
+            let name = self.maps.get_addr_name(sp).unwrap_or("not mapped");
             let read_operation = MemoryOperation {
                 pos: self.pos,
                 rip: pc,

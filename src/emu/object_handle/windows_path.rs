@@ -69,7 +69,7 @@ impl WindowsPath {
         }
 
         // Parse folders
-        while let Some(c) = chars.next() {
+        for c in chars {
             if c == '\\' || c == '/' {
                 if !current_folder.is_empty() {
                     path.folders.push_back(current_folder.to_ascii_lowercase());
@@ -115,8 +115,7 @@ impl WindowsPath {
         self.to_string().encode_utf16().collect()
     }
 
-    /// Returns the path as a string
-    pub fn to_string(&self) -> String {
+    fn as_windows_string(&self) -> String {
         let mut path = String::new();
 
         if let Some(drive) = self.drive {
@@ -149,7 +148,7 @@ impl WindowsPath {
         if self.is_relative() {
             self.to_string()
         } else {
-            format!("{}{}", UNC_PREFIX, self.to_string())
+            format!("{}{}", UNC_PREFIX, self)
         }
     }
 
@@ -270,7 +269,7 @@ impl Default for WindowsPath {
 
 impl std::fmt::Display for WindowsPath {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.to_string())
+        write!(f, "{}", self.as_windows_string())
     }
 }
 

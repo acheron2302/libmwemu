@@ -255,7 +255,7 @@ pub fn nt_alpc_send_wait_receive_port(emu: &mut Emu) {
             let _ = emu.maps.write_byte(recv_msg_ptr + off, 0);
         }
         // Write PORT_MESSAGE header: DataLength, TotalLength, then Type=LPC_REPLY at +0x04.
-        let _ = emu.maps.write_word(recv_msg_ptr + 0x00, send_data_len);
+        let _ = emu.maps.write_word(recv_msg_ptr, send_data_len);
         let _ = emu.maps.write_word(
             recv_msg_ptr + 0x02,
             PORT_MESSAGE_SIZE as u16 + send_data_len,

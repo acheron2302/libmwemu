@@ -11,6 +11,12 @@ pub struct FPUStack {
     invalid_flag: u8,
 }
 
+impl Default for FPUStack {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl FPUStack {
     pub fn new() -> Self {
         Self {
@@ -93,7 +99,7 @@ impl FPUStack {
         if self.depth == 0 {
             return None;
         }
-        let val = self.regs[self.top as usize].clone();
+        let val = self.regs[self.top as usize];
         self.top = (self.top.wrapping_add(1)) & 7;
         self.depth -= 1;
         //println!("depth decremented to {}", self.depth);
@@ -102,7 +108,7 @@ impl FPUStack {
 
     // only for tests.rs, this acces directly to index, it's not using self.top
     pub fn peek(&self, n: usize) -> F80 {
-        self.regs[n].clone()
+        self.regs[n]
     }
 
     pub fn get(&mut self, n: usize) -> F80 {

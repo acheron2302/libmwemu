@@ -37,10 +37,10 @@ pub fn gateway(addr: u32, emu: &mut emu::Emu) -> String {
         0x7748cc3f => WsaConnect(emu),
         */
         _ => {
-            if emu.cfg.skip_unimplemented == false {
+            if !emu.cfg.skip_unimplemented {
                 if emu.cfg.dump_on_exit && emu.cfg.dump_filename.is_some() {
                     serialization::Serialization::dump(
-                        &emu,
+                        emu,
                         emu.cfg.dump_filename.as_ref().unwrap(),
                     );
                 }
@@ -180,7 +180,7 @@ fn getaddrinfo(emu: &mut emu::Emu) {
         },
     ); // ai_protocol (IPPROTO_TCP)
     emu.maps
-        .write_qword(addrinfo_addr + 16, sockaddr_in_size as u64); // ai_addrlen
+        .write_qword(addrinfo_addr + 16, sockaddr_in_size); // ai_addrlen
     emu.maps.write_qword(addrinfo_addr + 24, canonname_addr); // ai_canonname
     emu.maps.write_qword(addrinfo_addr + 32, sockaddr_addr); // ai_addr
 

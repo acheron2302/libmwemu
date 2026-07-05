@@ -759,7 +759,7 @@ pub fn rebuild_ldr_lists(emu: &mut emu::Emu) {
             .cfg
             .filename
             .split('/')
-            .last()
+            .next_back()
             .unwrap_or("")
             .split('.')
             .next()

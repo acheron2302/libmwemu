@@ -40,7 +40,7 @@ pub(super) fn http_open_request_a(emu: &mut emu::Emu) {
         log::trace!("\tinvalid handle.");
     }
 
-    if flags & constants::INTERNET_FLAG_SECURE == 1 {
+    if flags & constants::INTERNET_FLAG_SECURE != 0 {
         log::trace!("\tssl communication.");
     }
 
@@ -84,7 +84,7 @@ pub(super) fn http_open_request_w(emu: &mut emu::Emu) {
         log::trace!("\tinvalid handle.");
     }
 
-    if flags & constants::INTERNET_FLAG_SECURE == 1 {
+    if flags & constants::INTERNET_FLAG_SECURE != 0 {
         log::trace!("\tssl communication.");
     }
 

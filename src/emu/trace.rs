@@ -26,11 +26,8 @@ impl Emu {
     pub fn capture_pre_op(&mut self) {
         if self.cfg.arch.is_aarch64() {
             let regs = *self.regs_aarch64();
-            match &mut self.threads[self.current_thread_id].arch {
-                crate::threading::context::ArchThreadState::AArch64 { pre_op_regs, .. } => {
-                    *pre_op_regs = regs
-                }
-                _ => {}
+            if let crate::threading::context::ArchThreadState::AArch64 { pre_op_regs, .. } = &mut self.threads[self.current_thread_id].arch {
+                *pre_op_regs = regs
             }
         } else {
             self.set_pre_op_regs(*self.regs());
@@ -43,11 +40,8 @@ impl Emu {
     pub fn capture_post_op(&mut self) {
         if self.cfg.arch.is_aarch64() {
             let regs = *self.regs_aarch64();
-            match &mut self.threads[self.current_thread_id].arch {
-                crate::threading::context::ArchThreadState::AArch64 { post_op_regs, .. } => {
-                    *post_op_regs = regs
-                }
-                _ => {}
+            if let crate::threading::context::ArchThreadState::AArch64 { post_op_regs, .. } = &mut self.threads[self.current_thread_id].arch {
+                *post_op_regs = regs
             }
         } else {
             self.set_post_op_regs(*self.regs());
@@ -301,7 +295,7 @@ impl Emu {
             );
         } else {
             let w = self.maps.read_wide_string_nocrash(self.cfg.string_addr);
-            if w.len() == 0 {
+            if w.is_empty() {
                 return;
             }
             if w.len() < 80 {

@@ -39,7 +39,7 @@ fn NtGetContextThread(emu: &mut emu::Emu) {
 
     log_red!(emu, "ntdll_NtGetContextThread   ctx:");
 
-    let ctx = Context64::new(&emu.regs());
+    let ctx = Context64::new(emu.regs());
     ctx.save(ctx_ptr2, &mut emu.maps);
 
     emu.regs_mut().rax = 0;

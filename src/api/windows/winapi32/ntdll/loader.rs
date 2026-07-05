@@ -29,7 +29,7 @@ fn LdrLoadDll(emu: &mut emu::Emu) {
         emu.maps.write_dword(libaddr_ptr, base as u32);
     }
 
-    emu.regs_mut().rax = constants::STATUS_SUCCESS as u64;
+    emu.regs_mut().rax = constants::STATUS_SUCCESS;
 }
 
 fn LdrLoadDll_gul(emu: &mut emu::Emu) {

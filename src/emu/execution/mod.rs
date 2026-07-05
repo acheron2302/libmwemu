@@ -778,7 +778,7 @@ impl Emu {
         self.max_pos = Some(end_pos);
         let r = self.run(None);
         self.max_pos = None;
-        return r;
+        r
     }
 
     /// Start or continue emulation.
@@ -1284,8 +1284,8 @@ impl Emu {
                                 for i in 0..16u64 {
                                     let addr = self.regs().rsp.wrapping_add(i * 8);
                                     if let Some(v) = self.maps.read_qword(addr) {
-                                        if (v >= 0x180000000 && v < 0x180400000)
-                                            || (v >= 0x7ff000000000 && v < 0x7ff800000000)
+                                        if (0x180000000..0x180400000).contains(&v)
+                                            || (0x7ff000000000..0x7ff800000000).contains(&v)
                                         {
                                             let m = self.maps.get_addr_name(v).unwrap_or("?");
                                             log::trace!("  rsp+0x{:x}: 0x{:x} ({})", i * 8, v, m);
@@ -1582,8 +1582,8 @@ impl Emu {
                             for i in 0..8u64 {
                                 let a = self.regs().rsp.wrapping_add(i * 8);
                                 if let Some(v) = self.maps.read_qword(a) {
-                                    if (v >= 0x180000000 && v < 0x180400000)
-                                        || (v >= 0x7ff000000000 && v < 0x7ff800000000)
+                                    if (0x180000000..0x180400000).contains(&v)
+                                        || (0x7ff000000000..0x7ff800000000).contains(&v)
                                     {
                                         log::trace!("  ret[+0x{:x}] = 0x{:x}", i * 8, v);
                                     }

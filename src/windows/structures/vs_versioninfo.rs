@@ -15,6 +15,12 @@ pub struct VS_VERSIONINFO {
     pub children: u16,
 }
 
+impl Default for VS_VERSIONINFO {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl VS_VERSIONINFO {
     pub fn new() -> Self {
         let mut sz_key = [0u16; 16];

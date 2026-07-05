@@ -103,15 +103,14 @@ pub fn nt_query_information_process(emu: &mut Emu) {
         };
         process_info.save(process_information, &mut emu.maps);
 
-        if return_length_ptr != 0 {
-            if !emu
+        if return_length_ptr != 0
+            && !emu
                 .maps
                 .write_qword(return_length_ptr, ProcessBasicInformation64::size())
             {
                 emu.regs_mut().rax = STATUS_INVALID_PARAMETER;
                 return;
             }
-        }
 
         emu.regs_mut().rax = STATUS_SUCCESS;
         return;
@@ -135,12 +134,11 @@ pub fn nt_query_information_process(emu: &mut Emu) {
             emu.regs_mut().rax = STATUS_INVALID_PARAMETER;
             return;
         }
-        if return_length_ptr != 0 {
-            if !emu.maps.write_dword(return_length_ptr, 4) {
+        if return_length_ptr != 0
+            && !emu.maps.write_dword(return_length_ptr, 4) {
                 emu.regs_mut().rax = STATUS_INVALID_PARAMETER;
                 return;
             }
-        }
         emu.regs_mut().rax = STATUS_SUCCESS;
         return;
     }
@@ -158,12 +156,11 @@ pub fn nt_query_information_process(emu: &mut Emu) {
             emu.regs_mut().rax = STATUS_INVALID_PARAMETER;
             return;
         }
-        if return_length_ptr != 0 {
-            if !emu.maps.write_qword(return_length_ptr, 8) {
+        if return_length_ptr != 0
+            && !emu.maps.write_qword(return_length_ptr, 8) {
                 emu.regs_mut().rax = STATUS_INVALID_PARAMETER;
                 return;
             }
-        }
         emu.regs_mut().rax = STATUS_SUCCESS;
         return;
     }

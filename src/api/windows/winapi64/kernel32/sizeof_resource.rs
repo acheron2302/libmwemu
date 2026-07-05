@@ -3,7 +3,7 @@ use crate::winapi::helper;
 
 pub fn SizeofResource(emu: &mut emu::Emu) {
     let hModule = emu.regs().rcx;
-    let hResInfo = emu.regs().rdx as u64;
+    let hResInfo = emu.regs().rdx;
 
     if helper::handler_exist(hResInfo) {
         let uri = helper::handler_get_uri(hResInfo);

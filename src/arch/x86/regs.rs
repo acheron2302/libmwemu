@@ -902,7 +902,8 @@ impl Regs64 {
     }
 
     pub fn get_xmm_reg(&self, reg: Register) -> u128 {
-        let value = match reg {
+        
+        match reg {
             Register::XMM0 => self.xmm0,
             Register::XMM1 => self.xmm1,
             Register::XMM2 => self.xmm2,
@@ -929,8 +930,7 @@ impl Regs64 {
             Register::MM7 => self.mm7,
 
             _ => unimplemented!("SSE  XMM register: {:?} ", reg),
-        };
-        value
+        }
     }
 
     pub fn set_xmm_reg(&mut self, reg: Register, value: u128) {
@@ -1072,7 +1072,8 @@ impl Regs64 {
     }
 
     pub fn get_ymm_reg(&self, reg: Register) -> U256 {
-        let value = match reg {
+        
+        match reg {
             Register::YMM0 => self.ymm0,
             Register::YMM1 => self.ymm1,
             Register::YMM2 => self.ymm2,
@@ -1091,8 +1092,7 @@ impl Regs64 {
             Register::YMM15 => self.ymm15,
 
             _ => unimplemented!("SSE  YMM register: {:?} ", reg),
-        };
-        value
+        }
     }
 
     pub fn set_ymm_reg(&mut self, reg: Register, value: U256) {
@@ -1142,7 +1142,9 @@ impl Regs64 {
     }
 
     pub fn get_reg(&self, reg: Register) -> u64 {
-        let value = match reg {
+        
+
+        match reg {
             // 64bits
             Register::RAX => self.rax,
             Register::RBX => self.rbx,
@@ -1250,9 +1252,7 @@ impl Regs64 {
             Register::CR5 => 0,
 
             _ => unimplemented!("unimplemented register {:?}", reg),
-        };
-
-        value
+        }
     }
 
     pub fn set_reg(&mut self, reg: Register, value: u64) {

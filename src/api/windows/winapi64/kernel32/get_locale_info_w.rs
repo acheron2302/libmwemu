@@ -103,8 +103,8 @@ const LOCALE_IFIRSTWEEKOFYEAR: u64 = 0x100D; // First week of year - MADE UP VAL
 const LOCALE_RETURN_NUMBER: u64 = 0x20000000;
 
 pub fn GetLocaleInfoW(emu: &mut emu::Emu) {
-    let locale = emu.regs().rcx as u64;
-    let lctype = emu.regs().rdx as u64;
+    let locale = emu.regs().rcx;
+    let lctype = emu.regs().rdx;
     let lp_lc_data = emu.regs().r8 as usize;
     let cch_data = emu.regs().r9 as usize;
 

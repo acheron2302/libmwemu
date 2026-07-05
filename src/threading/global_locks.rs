@@ -6,6 +6,12 @@ pub struct GlobalLocks {
     pub crit_map: HashMap<u64, CritState>, // key = pointer to CRITICAL_SECTION
 }
 
+impl Default for GlobalLocks {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl GlobalLocks {
     pub fn new() -> Self {
         Self {
