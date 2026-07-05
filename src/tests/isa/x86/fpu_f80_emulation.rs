@@ -1,6 +1,7 @@
 use crate::fpu::f80::F80;
 
 #[test]
+#[allow(clippy::approx_constant)]
 pub fn fpu_f80_emulation() {
     let mut f80 = F80::new();
 
