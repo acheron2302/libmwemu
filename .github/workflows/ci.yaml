@@ -2,9 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: [ "main" ] 
 
 env:
   CARGO_TERM_COLOR: always
@@ -34,11 +32,13 @@ jobs:
         if: runner.os == 'macOS'
         run: rustup target add x86_64-apple-darwin
 
-      - name: Build
-        run: cargo build --verbose
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: ${{ runner.os }}
 
       - name: Clippy
-        run: cargo clippy
+        run: cargo clippy --release --all-targets
 
       # `make tests` fetches the password-protected test bundle (sample binaries
       # + non-redistributable Windows DLLs) from the test-data release, then runs
